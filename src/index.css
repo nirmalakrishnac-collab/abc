@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-ivory: #FAF6EE;
+  --color-sand: #F3EBD9;
+  --color-champagne: #C69749;
+  --color-champagne-dark: #8F6422;
+  --color-burgundy: #6B1D2F;
+  --color-burgundy-dark: #4E1220;
+  --color-emerald-spa: #1B4D3E;
+  --color-charcoal: #1C1512;
+  --color-charcoal-muted: #524740;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+    background-color: #FAF6EE;
+    color: #1C1512;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-serif);
+  }
+}
+
+@keyframes subtle-shimmer {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+  }
+}
+
+.cta-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  pointer-events: none;
+}
+
+.cta-shimmer:hover::after {
+  animation: subtle-shimmer 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .cta-shimmer:hover::after {
+    animation: none;
+  }
+}

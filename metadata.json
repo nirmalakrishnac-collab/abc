@@ -1,0 +1,6 @@
+{
+  "name": "Spark Spa – Electronic City, Bangalore",
+  "description": "Luxury wellness sanctuary and massage spa in Electronic City, Bangalore offering Swedish massage, deep tissue therapy, aromatherapy, and bespoke couple spa packages.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
