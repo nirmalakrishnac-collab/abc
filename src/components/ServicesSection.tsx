@@ -6,24 +6,34 @@ import { LotusDivider } from './IndianMotifs';
 import { SpaImage } from './SpaImage';
 
 interface ServicesSectionProps {
+  services?: SpaService[];
+  config?: typeof SPA_CONFIG;
   onSelectService: (serviceName: string) => void;
+  previewLimit?: number;
+  onViewAllClick?: () => void;
 }
 
 type CategoryFilter = 'all' | 'massage' | 'holistic';
 
-export function ServicesSection({ onSelectService }: ServicesSectionProps) {
+export function ServicesSection({
+  services = SERVICES_DATA,
+  config = SPA_CONFIG,
+  onSelectService,
+  previewLimit,
+  onViewAllClick,
+}: ServicesSectionProps) {
   const [filter, setFilter] = useState<CategoryFilter>('all');
   const prefersReducedMotion = useReducedMotion();
 
   const filteredServices =
-    filter === 'all'
-      ? SERVICES_DATA
-      : SERVICES_DATA.filter((service) => service.category === filter);
+    filter === 'all' ? services : services.filter((service) => service.category === filter);
+
+  const visibleServices =
+    previewLimit && filter === 'all' ? filteredServices.slice(0, previewLimit) : filteredServices;
 
   return (
     <section id="services" className="py-16 md:py-24 bg-[#FAF6EE]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-10 border-b border-[#C69749]/25">
           <div className="max-w-2xl">
             <p className="text-xs sm:text-sm font-medium tracking-[0.16em] text-[#8F6422] mb-3">
@@ -37,7 +47,6 @@ export function ServicesSection({ onSelectService }: ServicesSectionProps) {
             </p>
           </div>
 
-          {/* Interactive Category Filter Tabs */}
           <div
             role="tablist"
             aria-label="Filter spa services"
@@ -59,9 +68,7 @@ export function ServicesSection({ onSelectService }: ServicesSectionProps) {
                   aria-selected={active}
                   onClick={() => setFilter(tab.id)}
                   className={`px-3.5 py-2 min-h-[40px] text-xs sm:text-sm font-medium rounded-md transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749] ${
-                    active
-                      ? 'bg-[#5C1728] text-[#FAF6EE] shadow-sm'
-                      : 'text-[#524740] hover:text-[#1C1512]'
+                    active ? 'bg-[#5C1728] text-[#FAF6EE] shadow-sm' : 'text-[#524740] hover:text-[#1C1512]'
                   }`}
                 >
                   {tab.label}
@@ -73,11 +80,11 @@ export function ServicesSection({ onSelectService }: ServicesSectionProps) {
 
         <LotusDivider className="mt-8" />
 
-        {/* Service Cards Grid */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredServices.map((service: SpaService, idx: number) => {
+          {visibleServices.map((service: SpaService, idx: number) => {
             const whatsappServiceUrl = buildWhatsAppUrl(
-              `Namaste ${SPA_CONFIG.brandName} (${SPA_CONFIG.area}), I would like to book "${service.name}". Please share available slots and tariff details.`
+              `Namaste ${config.brandName} (${config.area}), I would like to book "${service.name}". Please share available slots and tariff details.`,
+              config.whatsappNumber
             );
 
             return (
@@ -89,7 +96,6 @@ export function ServicesSection({ onSelectService }: ServicesSectionProps) {
                 transition={{ duration: 0.45, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
                 className="group flex flex-col bg-[#FFFFFF] border border-[#C69749]/25 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-[#C69749]/50"
               >
-                {/* Service Image */}
                 <div className="relative aspect-[4/3] overflow-hidden bg-[#EFE7D8]">
                   <SpaImage
                     src={service.image}
@@ -99,7 +105,6 @@ export function ServicesSection({ onSelectService }: ServicesSectionProps) {
                   />
                 </div>
 
-                {/* Card Body */}
                 <div className="flex-1 p-6 flex flex-col">
                   <div className="flex items-center gap-2 text-xs text-[#8F6422] font-medium tracking-wide">
                     <span className="tabular-nums">{service.index}</span>
@@ -115,7 +120,6 @@ export function ServicesSection({ onSelectService }: ServicesSectionProps) {
                     {service.shortDescription}
                   </p>
 
-                  {/* Editable Duration & Price Placeholders (unboxed metadata) */}
                   <div className="mt-5 pt-4 border-t border-[#1C1512]/10 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm text-[#524740]">
                     <span className="font-medium text-[#1C1512]">{service.duration}</span>
                     <span aria-hidden="true" className="text-[#C69749]">
@@ -149,6 +153,19 @@ export function ServicesSection({ onSelectService }: ServicesSectionProps) {
             );
           })}
         </div>
+
+        {onViewAllClick && previewLimit && filteredServices.length > previewLimit && (
+          <div className="mt-10 text-center">
+            <button
+              type="button"
+              onClick={onViewAllClick}
+              className="inline-flex items-center gap-2 px-6 py-3 min-h-[46px] border border-[#5C1728] text-[#5C1728] hover:bg-[#5C1728] hover:text-[#FAF6EE] text-sm font-semibold rounded-md transition-colors cursor-pointer"
+            >
+              <span>View All {services.length} Signature Therapies</span>
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

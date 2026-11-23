@@ -7,13 +7,20 @@ import {
   PREFERRED_TIME_SLOTS,
   SERVICES_DATA,
   SPA_CONFIG,
+  SpaOffer,
+  SpaService,
   WELCOME_OFFER,
+  WelcomeOfferConfig,
 } from '../data/spaData';
 import { LotusDivider } from './IndianMotifs';
 
 interface BookingFormSectionProps {
   preselectedService: string;
   preselectedOfferNote?: string;
+  config?: typeof SPA_CONFIG;
+  welcomeOffer?: WelcomeOfferConfig;
+  services?: SpaService[];
+  offers?: SpaOffer[];
 }
 
 interface FormState {
@@ -60,6 +67,10 @@ function parse12To24(slot12: string): string {
 export function BookingFormSection({
   preselectedService,
   preselectedOfferNote,
+  config = SPA_CONFIG,
+  welcomeOffer = WELCOME_OFFER,
+  services = SERVICES_DATA,
+  offers = OFFERS_DATA,
 }: BookingFormSectionProps) {
   const todayIso = new Date().toISOString().split('T')[0];
   const prefersReducedMotion = useReducedMotion();
@@ -68,7 +79,7 @@ export function BookingFormSection({
     fullName: '',
     mobileNumber: '',
     guestMode: 'Solo Session',
-    preferredService: preselectedService || SERVICES_DATA[0].name,
+    preferredService: preselectedService || services[0]?.name || 'Swedish Massage',
     preferredDate: todayIso,
     preferredTime24: '16:00',
     customTimeNote: '',
@@ -147,7 +158,7 @@ export function BookingFormSection({
     setErrors({});
 
     const lines = [
-      `Namaste ${SPA_CONFIG.brandName} (${SPA_CONFIG.area}),`,
+      `Namaste ${config.brandName} (${config.area}),`,
       `I would like to book an appointment:`,
       ``,
       `• Full Name: ${form.fullName.trim()}`,
@@ -157,7 +168,7 @@ export function BookingFormSection({
       `• Preferred Date: ${form.preferredDate}`,
       `• Guest Preferred Time: ${resolvedTimeDisplay}`,
       form.applyWelcomeOffer
-        ? `• Privilege Offer: ${WELCOME_OFFER.offerCode} (Website Welcome Offer)`
+        ? `• Privilege Offer: ${welcomeOffer.offerCode} (Website Welcome Offer)`
         : `• Privilege Offer: Standard Booking`,
       form.additionalMessage.trim()
         ? `• Additional Message: ${form.additionalMessage.trim()}`
@@ -166,7 +177,7 @@ export function BookingFormSection({
       `Please confirm slot availability on WhatsApp. Dhanyavaad!`,
     ];
 
-    const whatsappUrl = buildWhatsAppUrl(lines.join('\n'));
+    const whatsappUrl = buildWhatsAppUrl(lines.join('\n'), config.whatsappNumber);
     setSubmittedUrl(whatsappUrl);
     setSubmittedSummary({
       fullName: form.fullName,
@@ -189,15 +200,14 @@ export function BookingFormSection({
   };
 
   const serviceOptions = [
-    ...SERVICES_DATA.map((s) => s.name),
-    ...OFFERS_DATA.map((o) => `Package: ${o.title}`),
+    ...services.map((s) => s.name),
+    ...offers.map((o) => `Package: ${o.title}`),
   ];
 
   return (
     <section id="booking" className="py-16 md:py-24 bg-[#FAF6EE]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          {/* Left Editorial Column */}
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
             whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
@@ -220,15 +230,15 @@ export function BookingFormSection({
             <div className="space-y-4 text-sm text-[#524740]">
               <div className="flex items-center gap-3">
                 <Clock className="w-4 h-4 text-[#5C1728] shrink-0" aria-hidden="true" />
-                <span>{SPA_CONFIG.hours}</span>
+                <span>{config.hours}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-[#5C1728] shrink-0" aria-hidden="true" />
                 <a
-                  href={SPA_CONFIG.phoneHref}
+                  href={config.phoneHref}
                   className="hover:text-[#1C1512] underline decoration-[#C69749]/60 underline-offset-4 tabular-nums font-medium"
                 >
-                  {SPA_CONFIG.phoneDisplay}
+                  {config.phoneDisplay}
                 </a>
               </div>
               <div className="flex items-center gap-3">
@@ -238,7 +248,6 @@ export function BookingFormSection({
             </div>
           </motion.div>
 
-          {/* Right High-Converting Form Column */}
           <motion.div
             initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
             whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
@@ -249,16 +258,13 @@ export function BookingFormSection({
             {submittedUrl && submittedSummary ? (
               <div className="space-y-6">
                 <div className="flex items-start gap-3.5">
-                  <CheckCircle2
-                    className="w-6 h-6 text-[#1B4D3E] shrink-0 mt-0.5"
-                    aria-hidden="true"
-                  />
+                  <CheckCircle2 className="w-6 h-6 text-[#1B4D3E] shrink-0 mt-0.5" aria-hidden="true" />
                   <div>
                     <h3 className="font-serif text-2xl sm:text-3xl font-medium text-[#1C1512]">
                       WhatsApp Appointment Request Ready
                     </h3>
                     <p className="mt-1.5 text-sm text-[#524740]">
-                      Tap below if WhatsApp did not open automatically to send your booking details directly to Spark Spa.
+                      Tap below if WhatsApp did not open automatically to send your booking details directly to {config.brandName}.
                     </p>
                   </div>
                 </div>
@@ -279,7 +285,7 @@ export function BookingFormSection({
                   {submittedSummary.applyWelcomeOffer && (
                     <p>
                       <span className="font-semibold text-[#5C1728]">Offer Applied:</span>{' '}
-                      {WELCOME_OFFER.offerCode}
+                      {welcomeOffer.offerCode}
                     </p>
                   )}
                   {submittedSummary.additionalMessage && (
@@ -311,7 +317,6 @@ export function BookingFormSection({
               </div>
             ) : (
               <form onSubmit={handleSubmit} noValidate className="space-y-5">
-                {/* Guest Session Toggle */}
                 <div>
                   <span className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-2">
                     Guest Preference
@@ -338,13 +343,9 @@ export function BookingFormSection({
                   </div>
                 </div>
 
-                {/* Name & Mobile */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label
-                      htmlFor="booking-full-name"
-                      className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5"
-                    >
+                    <label htmlFor="booking-full-name" className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5">
                       Full Name <span className="text-[#5C1728]">*</span>
                     </label>
                     <input
@@ -366,10 +367,7 @@ export function BookingFormSection({
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="booking-mobile"
-                      className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5"
-                    >
+                    <label htmlFor="booking-mobile" className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5">
                       Mobile Number (WhatsApp) <span className="text-[#5C1728]">*</span>
                     </label>
                     <input
@@ -391,13 +389,9 @@ export function BookingFormSection({
                   </div>
                 </div>
 
-                {/* Service & Date */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label
-                      htmlFor="booking-service"
-                      className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5"
-                    >
+                    <label htmlFor="booking-service" className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5">
                       Preferred Service <span className="text-[#5C1728]">*</span>
                     </label>
                     <select
@@ -422,10 +416,7 @@ export function BookingFormSection({
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="booking-date"
-                      className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5"
-                    >
+                    <label htmlFor="booking-date" className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5">
                       Preferred Date <span className="text-[#5C1728]">*</span>
                     </label>
                     <input
@@ -446,18 +437,12 @@ export function BookingFormSection({
                   </div>
                 </div>
 
-                {/* Guest-Chosen Preferred Time (Custom Time Picker + Free Note + Quick Chips) */}
                 <div>
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <label
-                      htmlFor="booking-custom-time"
-                      className="block text-xs sm:text-sm font-medium text-[#1C1512]"
-                    >
+                    <label htmlFor="booking-custom-time" className="block text-xs sm:text-sm font-medium text-[#1C1512]">
                       Your Preferred Time <span className="text-[#5C1728]">*</span>
                     </label>
-                    <span className="text-xs text-[#8F6422]">
-                      Pick any time or type your preferred slot
-                    </span>
+                    <span className="text-xs text-[#8F6422]">Pick any time or type your preferred slot</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -467,11 +452,7 @@ export function BookingFormSection({
                       type="time"
                       value={form.preferredTime24}
                       onChange={(e) =>
-                        setForm({
-                          ...form,
-                          preferredTime24: e.target.value,
-                          customTimeNote: '',
-                        })
+                        setForm({ ...form, preferredTime24: e.target.value, customTimeNote: '' })
                       }
                       className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm text-[#1C1512] tabular-nums focus:outline-none focus:border-[#C69749] focus:ring-1 focus:ring-[#C69749]"
                     />
@@ -486,22 +467,16 @@ export function BookingFormSection({
                     />
                   </div>
 
-                  {/* Quick-tap suggestions that populate the guest's time */}
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
                     {PREFERRED_TIME_SLOTS.slice(0, 6).map((slot) => {
                       const slot24 = parse12To24(slot);
-                      const isMatched =
-                        !form.customTimeNote.trim() && form.preferredTime24 === slot24;
+                      const isMatched = !form.customTimeNote.trim() && form.preferredTime24 === slot24;
                       return (
                         <button
                           key={slot}
                           type="button"
                           onClick={() =>
-                            setForm({
-                              ...form,
-                              preferredTime24: slot24,
-                              customTimeNote: '',
-                            })
+                            setForm({ ...form, preferredTime24: slot24, customTimeNote: '' })
                           }
                           className={`px-2.5 py-1.5 text-xs font-medium rounded border transition-colors tabular-nums cursor-pointer ${
                             isMatched
@@ -522,12 +497,8 @@ export function BookingFormSection({
                   )}
                 </div>
 
-                {/* Additional Message */}
                 <div>
-                  <label
-                    htmlFor="booking-message"
-                    className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5"
-                  >
+                  <label htmlFor="booking-message" className="block text-xs sm:text-sm font-medium text-[#1C1512] mb-1.5">
                     Additional Message
                   </label>
                   <textarea
@@ -541,20 +512,17 @@ export function BookingFormSection({
                   />
                 </div>
 
-                {/* Welcome Offer Privilege Checkbox */}
                 <label className="flex items-start gap-3 p-3.5 rounded-lg bg-[#F3EBD9]/75 border border-[#C69749]/35 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.applyWelcomeOffer}
-                    onChange={(e) =>
-                      setForm({ ...form, applyWelcomeOffer: e.target.checked })
-                    }
+                    onChange={(e) => setForm({ ...form, applyWelcomeOffer: e.target.checked })}
                     className="mt-0.5 w-4 h-4 accent-[#5C1728] rounded cursor-pointer"
                   />
                   <span className="text-xs sm:text-sm text-[#1C1512] leading-snug">
                     <span className="font-semibold text-[#5C1728] inline-flex items-center gap-1">
                       <Gift className="w-3.5 h-3.5 inline" aria-hidden="true" />
-                      Apply Website Welcome Offer ({WELCOME_OFFER.offerCode})
+                      Apply Website Welcome Offer ({welcomeOffer.offerCode})
                     </span>{' '}
                     — includes complimentary herbal compress &amp; tea ritual.
                   </span>

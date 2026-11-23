@@ -1,47 +1,78 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
+export type AppRoute =
+  | '/'
+  | '/services'
+  | '/gallery'
+  | '/offers'
+  | '/blog'
+  | '/contact'
+  | '/client-portal';
+
 interface NavbarProps {
+  currentPath: string;
+  brandName: string;
+  onNavigate: (path: AppRoute | string) => void;
   onBookClick: () => void;
 }
 
-const NAV_LINKS = [
-  { label: 'Services', href: '#services' },
-  { label: 'Experience', href: '#why-spark' },
-  { label: 'Gallery', href: '#gallery' },
-  { label: 'Offers', href: '#offers' },
-  { label: 'Location', href: '#location' },
+const NAV_LINKS: { label: string; path: AppRoute }[] = [
+  { label: 'Home', path: '/' },
+  { label: 'Services', path: '/services' },
+  { label: 'Gallery', path: '/gallery' },
+  { label: 'Offers', path: '/offers' },
+  { label: 'Blog', path: '/blog' },
+  { label: 'Contact', path: '/contact' },
 ];
 
-export function Navbar({ onBookClick }: NavbarProps) {
+export function Navbar({ currentPath, brandName, onNavigate, onBookClick }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLinkClick = () => {
-    setMobileMenuOpen(false);
+  const isActive = (linkPath: AppRoute) => {
+    if (linkPath === '/') return currentPath === '/';
+    return currentPath === linkPath || currentPath.startsWith(linkPath + '/');
   };
 
   return (
     <header className="relative md:sticky md:top-0 z-40 bg-[#FAF6EE]/95 backdrop-blur-md border-b border-[#C69749]/25">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-18 flex items-center justify-between gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-18 flex items-center justify-between gap-6">
         {/* Zone 1: Single-element Brand Wordmark */}
         <a
-          href="#top"
+          href="/"
+          onClick={(e) => {
+            e.preventDefault();
+            onNavigate('/');
+            setMobileMenuOpen(false);
+          }}
           className="font-serif text-2xl md:text-[27px] font-semibold tracking-tight text-[#1C1512] whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749] rounded-sm"
         >
-          Spark Spa
+          {brandName}
         </a>
 
-        {/* Zone 2: 5 concise single-line navigation links */}
-        <nav aria-label="Primary navigation" className="hidden md:flex items-center gap-7">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-[#524740] hover:text-[#5C1728] transition-colors duration-150 relative py-1 whitespace-nowrap shrink-0 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-[#C69749] hover:after:w-full after:transition-all after:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749] rounded-sm"
-            >
-              {link.label}
-            </a>
-          ))}
+        {/* Zone 2: 6 single-line page links */}
+        <nav aria-label="Primary navigation" className="hidden md:flex items-center gap-6">
+          {NAV_LINKS.map((link) => {
+            const active = isActive(link.path);
+            return (
+              <a
+                key={link.path}
+                href={link.path}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigate(link.path);
+                }}
+                aria-current={active ? 'page' : undefined}
+                className={`text-sm font-medium transition-colors duration-150 relative py-1 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749] rounded-sm ${
+                  active
+                    ? 'text-[#5C1728] font-semibold after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#C69749]'
+                    : 'text-[#524740] hover:text-[#5C1728] after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-[#C69749] hover:after:w-full after:transition-all after:duration-200'
+                }`}
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </nav>
 
         {/* Zone 3: Single Primary Action (+ compact mobile drawer toggle) */}
@@ -72,16 +103,28 @@ export function Navbar({ onBookClick }: NavbarProps) {
           aria-label="Mobile navigation"
           className="md:hidden border-t border-[#C69749]/20 bg-[#FAF6EE] px-4 py-4 space-y-1"
         >
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={handleLinkClick}
-              className="flex items-center min-h-[44px] px-3 text-base font-medium text-[#1C1512] hover:bg-[#F3EBD9] rounded-md transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const active = isActive(link.path);
+            return (
+              <a
+                key={link.path}
+                href={link.path}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigate(link.path);
+                  setMobileMenuOpen(false);
+                }}
+                aria-current={active ? 'page' : undefined}
+                className={`flex items-center min-h-[44px] px-3 text-base font-medium rounded-md transition-colors ${
+                  active
+                    ? 'bg-[#5C1728] text-[#FAF6EE]'
+                    : 'text-[#1C1512] hover:bg-[#F3EBD9]'
+                }`}
+              >
+                {link.label}
+              </a>
+            );
+          })}
         </nav>
       )}
     </header>

@@ -14,13 +14,13 @@ import { buildDirectionsUrl, SPA_CONFIG } from '../data/spaData';
 
 const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
-function SparkSpaMapCanvas() {
+function SparkSpaMapCanvas({ config }: { config: typeof SPA_CONFIG }) {
   const status = useApiLoadingStatus();
   const [markerRef, marker] = useAdvancedMarkerRef();
   const [infoOpen, setInfoOpen] = useState(true);
 
   const handleClose = useCallback(() => setInfoOpen(false), []);
-  const directionsUrl = buildDirectionsUrl();
+  const directionsUrl = buildDirectionsUrl(config.coordinates, config.brandName, config.area);
 
   if (
     !MAPS_API_KEY ||
@@ -33,13 +33,13 @@ function SparkSpaMapCanvas() {
           <MapPin className="w-6 h-6 text-[#8C6D37]" aria-hidden="true" />
         </div>
         <h3 className="font-serif text-2xl font-medium text-[#1F1D1B]">
-          {SPA_CONFIG.displayAddressLine1}
+          {config.displayAddressLine1}
         </h3>
         <p className="mt-1 text-sm text-[#4E4944] max-w-sm">
-          {SPA_CONFIG.displayAddressLine2}
+          {config.displayAddressLine2}
         </p>
         <p className="mt-2 text-xs text-[#8C6D37] tabular-nums">
-          {SPA_CONFIG.coordinates.lat.toFixed(4)}° N, {SPA_CONFIG.coordinates.lng.toFixed(4)}° E
+          {config.coordinates.lat.toFixed(4)}° N, {config.coordinates.lng.toFixed(4)}° E
         </p>
         <a
           href={directionsUrl}
@@ -58,7 +58,7 @@ function SparkSpaMapCanvas() {
     <div className="w-full h-[380px] sm:h-[440px] relative">
       <GoogleMap
         mapId="DEMO_MAP_ID"
-        defaultCenter={SPA_CONFIG.coordinates}
+        defaultCenter={config.coordinates}
         defaultZoom={15}
         gestureHandling="cooperative"
         internalUsageAttributionIds={['gmp_mcp_codeassist_v1_aistudio']}
@@ -66,8 +66,8 @@ function SparkSpaMapCanvas() {
       >
         <AdvancedMarker
           ref={markerRef}
-          position={SPA_CONFIG.coordinates}
-          title={`${SPA_CONFIG.brandName} — ${SPA_CONFIG.area}`}
+          position={config.coordinates}
+          title={`${config.brandName} — ${config.area}`}
           onClick={() => setInfoOpen(true)}
         >
           <Pin background="#B89352" borderColor="#1F1D1B" glyphColor="#1F1D1B" scale={1.15} />
@@ -77,10 +77,10 @@ function SparkSpaMapCanvas() {
           <InfoWindow anchor={marker} onCloseClick={handleClose} maxWidth={250}>
             <div className="p-1 text-[#1F1D1B] font-sans">
               <p className="font-serif text-lg font-semibold leading-tight">
-                {SPA_CONFIG.displayAddressLine1}
+                {config.displayAddressLine1}
               </p>
               <p className="mt-1 text-xs text-[#4E4944] leading-snug">
-                {SPA_CONFIG.displayAddressLine2}
+                {config.displayAddressLine2}
               </p>
               <a
                 href={directionsUrl}
@@ -98,21 +98,20 @@ function SparkSpaMapCanvas() {
   );
 }
 
-export function LocationSection() {
-  const directionsUrl = buildDirectionsUrl();
+export function LocationSection({ config = SPA_CONFIG }: { config?: typeof SPA_CONFIG }) {
+  const directionsUrl = buildDirectionsUrl(config.coordinates, config.brandName, config.area);
 
   return (
     <section id="location" className="py-16 md:py-24 bg-[#F3EBD9] border-y border-[#C69749]/25">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-stretch">
-          {/* Address & Details Card */}
           <div className="lg:col-span-5 flex flex-col justify-between bg-[#FAF6EE] border border-[#C69749]/30 rounded-xl p-7 sm:p-9">
             <div>
               <p className="text-xs sm:text-sm font-medium tracking-[0.16em] text-[#8F6422] mb-3">
                 Visit Us
               </p>
               <h2 className="font-serif text-3xl sm:text-4xl leading-[1.15] font-medium text-[#1C1512]">
-                Find Spark Spa in Electronic City
+                Find {config.brandName} in Electronic City
               </h2>
 
               <div className="mt-8 space-y-6">
@@ -120,13 +119,13 @@ export function LocationSection() {
                   <MapPin className="w-5 h-5 text-[#5C1728] shrink-0 mt-0.5" aria-hidden="true" />
                   <div>
                     <p className="text-base font-semibold text-[#1C1512]">
-                      {SPA_CONFIG.displayAddressLine1}
+                      {config.displayAddressLine1}
                     </p>
                     <p className="mt-0.5 text-sm sm:text-base text-[#524740]">
-                      {SPA_CONFIG.displayAddressLine2}
+                      {config.displayAddressLine2}
                     </p>
                     <p className="mt-1 text-xs text-[#8F6422]">
-                      {SPA_CONFIG.editableStreetNote}
+                      {config.editableStreetNote}
                     </p>
                   </div>
                 </div>
@@ -135,7 +134,7 @@ export function LocationSection() {
                   <Clock className="w-5 h-5 text-[#5C1728] shrink-0 mt-0.5" aria-hidden="true" />
                   <div>
                     <p className="text-sm font-semibold text-[#1C1512]">Opening Hours</p>
-                    <p className="mt-0.5 text-sm text-[#524740]">{SPA_CONFIG.hours}</p>
+                    <p className="mt-0.5 text-sm text-[#524740]">{config.hours}</p>
                   </div>
                 </div>
 
@@ -144,10 +143,10 @@ export function LocationSection() {
                   <div>
                     <p className="text-sm font-semibold text-[#1C1512]">Direct Concierge</p>
                     <a
-                      href={SPA_CONFIG.phoneHref}
+                      href={config.phoneHref}
                       className="mt-0.5 inline-block text-sm text-[#524740] hover:text-[#1C1512] underline decoration-[#C69749]/60 underline-offset-4 tabular-nums"
                     >
-                      {SPA_CONFIG.phoneDisplay}
+                      {config.phoneDisplay}
                     </a>
                   </div>
                 </div>
@@ -165,7 +164,7 @@ export function LocationSection() {
                 <span>Get Directions</span>
               </a>
               <a
-                href={SPA_CONFIG.phoneHref}
+                href={config.phoneHref}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] border border-[#1C1512]/25 hover:bg-[#F3EBD9] text-[#1C1512] text-sm font-medium rounded-md transition-colors whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749]"
               >
                 <Phone className="w-4 h-4 text-[#5C1728]" aria-hidden="true" />
@@ -174,11 +173,10 @@ export function LocationSection() {
             </div>
           </div>
 
-          {/* Interactive Google Map */}
           <div className="lg:col-span-7 rounded-xl overflow-hidden border border-[#C69749]/30 bg-[#FAF6EE] shadow-sm">
             {MAPS_API_KEY ? (
               <APIProvider apiKey={MAPS_API_KEY} language="en" region="IN" libraries={['marker']}>
-                <SparkSpaMapCanvas />
+                <SparkSpaMapCanvas config={config} />
               </APIProvider>
             ) : (
               <div className="w-full h-[380px] sm:h-[440px] bg-[#EFE7D8] flex flex-col items-center justify-center p-8 text-center">
@@ -186,10 +184,10 @@ export function LocationSection() {
                   <MapPin className="w-6 h-6 text-[#8C6D37]" aria-hidden="true" />
                 </div>
                 <h3 className="font-serif text-2xl font-medium text-[#1F1D1B]">
-                  {SPA_CONFIG.displayAddressLine1}
+                  {config.displayAddressLine1}
                 </h3>
                 <p className="mt-1 text-sm text-[#4E4944] max-w-sm">
-                  {SPA_CONFIG.displayAddressLine2}
+                  {config.displayAddressLine2}
                 </p>
                 <a
                   href={directionsUrl}

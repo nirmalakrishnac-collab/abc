@@ -4,10 +4,16 @@ import { buildWhatsAppUrl, SPA_CONFIG } from '../data/spaData';
 import { SpaImage } from './SpaImage';
 
 interface HeroSectionProps {
+  config?: typeof SPA_CONFIG;
   onBookClick: () => void;
+  onExploreServices: () => void;
 }
 
-export function HeroSection({ onBookClick }: HeroSectionProps) {
+export function HeroSection({
+  config = SPA_CONFIG,
+  onBookClick,
+  onExploreServices,
+}: HeroSectionProps) {
   const prefersReducedMotion = useReducedMotion();
 
   const fadeUp = prefersReducedMotion
@@ -18,7 +24,8 @@ export function HeroSection({ onBookClick }: HeroSectionProps) {
       };
 
   const quickWhatsAppUrl = buildWhatsAppUrl(
-    `Namaste ${SPA_CONFIG.brandName} (${SPA_CONFIG.area}), I would like to book a spa appointment today.`
+    `Namaste ${config.brandName} (${config.area}), I would like to book a spa appointment today.`,
+    config.whatsappNumber
   );
 
   return (
@@ -26,7 +33,6 @@ export function HeroSection({ onBookClick }: HeroSectionProps) {
       id="top"
       className="relative min-h-[82vh] md:min-h-[88vh] flex items-end md:items-center overflow-hidden bg-[#1C1512]"
     >
-      {/* Background Photography with gentle ambient breath */}
       <motion.div
         className="absolute inset-0"
         initial={prefersReducedMotion ? false : { scale: 1.05 }}
@@ -40,14 +46,12 @@ export function HeroSection({ onBookClick }: HeroSectionProps) {
           fetchPriority="high"
           className="w-full h-full object-cover object-center"
         />
-        {/* Measured gradient scrim for WCAG AA contrast across all frames */}
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-t from-[#16100D]/92 via-[#16100D]/55 to-[#16100D]/45 md:bg-gradient-to-r md:from-[#16100D]/90 md:via-[#16100D]/55 md:to-[#16100D]/30"
         />
       </motion.div>
 
-      {/* Hero Foreground */}
       <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="max-w-2xl">
           <motion.p
@@ -55,7 +59,7 @@ export function HeroSection({ onBookClick }: HeroSectionProps) {
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             className="text-xs sm:text-sm font-medium tracking-[0.2em] text-[#E8C57B] mb-4"
           >
-            Namaste · Electronic City · Bangalore
+            Namaste · {config.area}
           </motion.p>
 
           <motion.h1
@@ -71,7 +75,7 @@ export function HeroSection({ onBookClick }: HeroSectionProps) {
             transition={{ duration: 0.65, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
             className="mt-5 text-base sm:text-lg leading-relaxed text-[#EFE3CE] max-w-xl"
           >
-            Experience premium spa and wellness treatments at Spark Spa, Electronic City, Bangalore.
+            Experience premium spa and wellness treatments at {config.brandName}, {config.area}.
           </motion.p>
 
           <motion.div
@@ -101,12 +105,13 @@ export function HeroSection({ onBookClick }: HeroSectionProps) {
               <span>WhatsApp Book Now</span>
             </a>
 
-            <a
-              href="#services"
-              className="inline-flex items-center justify-center px-5 py-3.5 min-h-[48px] text-[#FAF6EE] hover:text-[#E8C57B] text-sm sm:text-base font-medium underline underline-offset-4 decoration-[#E8C57B]/50 transition-colors duration-150 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9B263]"
+            <button
+              type="button"
+              onClick={onExploreServices}
+              className="inline-flex items-center justify-center px-5 py-3.5 min-h-[48px] text-[#FAF6EE] hover:text-[#E8C57B] text-sm sm:text-base font-medium underline underline-offset-4 decoration-[#E8C57B]/50 transition-colors duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9B263]"
             >
               Explore Our Services
-            </a>
+            </button>
           </motion.div>
         </div>
       </div>

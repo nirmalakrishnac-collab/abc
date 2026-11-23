@@ -54,6 +54,30 @@ export interface WelcomeOfferConfig {
   whatsappGreeting: string;
 }
 
+export interface BlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  excerpt: string;
+  content: string;
+  coverImage: string;
+  coverAlt: string;
+  author: string;
+  publishedAt: string;
+  readTime: string;
+  status: 'published' | 'draft';
+}
+
+export interface SiteContentState {
+  config: typeof SPA_CONFIG;
+  welcomeOffer: WelcomeOfferConfig;
+  services: SpaService[];
+  gallery: GalleryItem[];
+  offers: SpaOffer[];
+  blogs: BlogPost[];
+}
+
 /**
  * Editable central business configuration for Spark Spa.
  * Update phone, WhatsApp number, exact street address, and coordinates here.
@@ -93,14 +117,18 @@ export const WELCOME_OFFER: WelcomeOfferConfig = {
     'Namaste Spark Spa (Electronic City, Bangalore), I would like to claim your Website Welcome Offer (SPARK-WELCOME) and check today’s available appointment slots.',
 };
 
-export function buildWhatsAppUrl(message: string): string {
-  return `https://wa.me/${SPA_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+export function buildWhatsAppUrl(message: string, whatsappNumber: string = SPA_CONFIG.whatsappNumber): string {
+  const cleanNum = whatsappNumber.replace(/\D/g, '') || SPA_CONFIG.whatsappNumber;
+  return `https://wa.me/${cleanNum}?text=${encodeURIComponent(message)}`;
 }
 
-export function buildDirectionsUrl(): string {
-  const { lat, lng } = SPA_CONFIG.coordinates;
-  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&query=${encodeURIComponent(
-    `${SPA_CONFIG.brandName}, ${SPA_CONFIG.area}`
+export function buildDirectionsUrl(
+  coordinates: { lat: number; lng: number } = SPA_CONFIG.coordinates,
+  brandName: string = SPA_CONFIG.brandName,
+  area: string = SPA_CONFIG.area
+): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}&query=${encodeURIComponent(
+    `${brandName}, ${area}`
   )}`;
 }
 
@@ -371,3 +399,64 @@ export const PREFERRED_TIME_SLOTS = [
   '7:00 PM',
   '8:15 PM',
 ];
+
+export const INITIAL_BLOGS: BlogPost[] = [
+  {
+    id: 'blog-deep-tissue-electronic-city',
+    slug: 'why-deep-tissue-massage-helps-electronic-city-professionals',
+    title: 'Why Electronic City Professionals Need Weekly Deep Tissue Restoration',
+    category: 'Massage Therapy',
+    excerpt:
+      'Long hours at tech campuses and Electronic City commutes create deep neck and lower-back tension. Discover how targeted myofascial bodywork restores posture and sleep.',
+    content:
+      'Between extended laptop sessions across Electronic City Phase 1 and Phase 2 and daily Bangalore traffic along Hosur Road, chronic shoulder stiffness often settles deeper than surface soreness.\n\nUnlike a quick relaxation rub, authentic Deep Tissue Massage focuses on slow, deliberate strokes calibrated to your breath. By warming the fascia first with steam or heated compresses, our certified therapists ease stubborn knots around the trapezius and lumbar muscles without discomfort.\n\nPairing a 60- or 90-minute evening session with warm tulsi-ginger tea lets your nervous system switch from high alert into restorative recovery before you head home.',
+    coverImage: '/src/assets/images/therapy_deep_tissue_action_1795111730542.jpg',
+    coverAlt: 'Deep tissue shoulder and back massage therapy at Spark Spa Electronic City',
+    author: 'Spark Spa Wellness Desk',
+    publishedAt: '2026-11-12',
+    readTime: '3 min read',
+    status: 'published',
+  },
+  {
+    id: 'blog-sandalwood-aromatherapy',
+    slug: 'mysore-sandalwood-aromatherapy-rituals-bangalore',
+    title: 'Mysore Sandalwood & Botanical Oils: Inside Our Signature Aromatherapy Ritual',
+    category: 'Ayurveda & Oils',
+    excerpt:
+      'Cold-pressed sesame bases infused with Karnataka sandalwood, lavender, and eucalyptus transform a classic spa appointment into deep sensory calm.',
+    content:
+      'Scent reaches the emotional center of the brain faster than sound or sight. When you step into a candlelit suite at Spark Spa in Electronic City, warm botanical notes immediately signal your body to slow down.\n\nEvery aromatherapy session begins with a personal consultation. Guests seeking mental clarity often choose crisp eucalyptus and lemongrass, while evening visitors prefer soothing Mysore sandalwood and wild lavender.\n\nWarmed to body temperature in brass vessels, the botanical blend deeply nourishes skin parched by air-conditioned offices while rhythmic effleurage strokes restore steady circulation.',
+    coverImage: '/src/assets/images/therapy_aromatherapy_action_1795111730499.jpg',
+    coverAlt: 'Indian aromatherapy ritual pouring warm golden essential oils by candlelight',
+    author: 'Meera Nair, Lead Therapist',
+    publishedAt: '2026-11-08',
+    readTime: '4 min read',
+    status: 'published',
+  },
+  {
+    id: 'blog-couple-sanctuary-guide',
+    slug: 'planning-a-private-couple-spa-retreat-electronic-city',
+    title: 'How to Plan an Unhurried Couple Spa Retreat in South Bangalore',
+    category: 'Couple Retreats',
+    excerpt:
+      'Celebrate anniversaries or simply reclaim a quiet weekend afternoon inside a sound-insulated couple sanctuary complete with floral stone bath rituals.',
+    content:
+      'True luxury is uninterrupted time together away from notifications and city noise. Our Royal Couple Sanctuary Suite at Spark Spa is crafted for unhurried privacy from start to finish.\n\nGuests begin with a private warm thermal shower, followed by side-by-side signature Swedish or Aromatherapy massages tailored independently for each partner’s preferred pressure.\n\nFinish with warm herbal compresses and unhurried tea in our linen lounge—or reserve your exact preferred evening time slot in one tap via WhatsApp.',
+    coverImage: '/src/assets/images/therapy_couple_action_1795111730015.jpg',
+    coverAlt: 'Royal Indian couple spa suite with brass lanterns and rose petal stone soaking tub',
+    author: 'Spark Spa Concierge',
+    publishedAt: '2026-11-02',
+    readTime: '3 min read',
+    status: 'published',
+  },
+];
+
+export const INITIAL_SITE_STATE: SiteContentState = {
+  config: SPA_CONFIG,
+  welcomeOffer: WELCOME_OFFER,
+  services: SERVICES_DATA,
+  gallery: GALLERY_DATA,
+  offers: OFFERS_DATA,
+  blogs: INITIAL_BLOGS,
+};
+

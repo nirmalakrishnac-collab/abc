@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { motion, useReducedMotion, useScroll, useSpring } from 'motion/react';
+import { BlogSection } from './components/BlogSection';
 import { BookingFormSection } from './components/BookingFormSection';
+import { ClientPortalPage } from './components/ClientPortalPage';
 import { Footer } from './components/Footer';
 import { GallerySection } from './components/GallerySection';
 import { HeroSection } from './components/HeroSection';
@@ -8,15 +10,29 @@ import { LocationSection } from './components/LocationSection';
 import { MobileStickyBar } from './components/MobileStickyBar';
 import { Navbar } from './components/Navbar';
 import { OffersSection } from './components/OffersSection';
+import { PageHeaderBanner } from './components/PageHeaderBanner';
 import { ServicesSection } from './components/ServicesSection';
 import { WelcomeOfferSection } from './components/WelcomeOfferSection';
 import { WhyChooseSection } from './components/WhyChooseSection';
-import { SERVICES_DATA } from './data/spaData';
+import { INITIAL_SITE_STATE, SiteContentState } from './data/spaData';
+
+function normalizePath(pathname: string): string {
+  const clean = pathname.replace(/\/+$/, '');
+  return clean === '' ? '/' : clean;
+}
 
 export default function App() {
-  const [preselectedService, setPreselectedService] = useState<string>(SERVICES_DATA[0].name);
+  const [currentPath, setCurrentPath] = useState<string>(() =>
+    normalizePath(window.location.pathname)
+  );
+  const [siteData, setSiteData] = useState<SiteContentState>(INITIAL_SITE_STATE);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [preselectedService, setPreselectedService] = useState<string>(
+    INITIAL_SITE_STATE.services[0].name
+  );
   const [preselectedOfferNote, setPreselectedOfferNote] = useState<string>('');
   const [mapsQuotaExceeded, setMapsQuotaExceeded] = useState(false);
+
   const prefersReducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, {
@@ -25,9 +41,42 @@ export default function App() {
     restDelta: 0.001,
   });
 
-  // Sync canonical & OpenGraph URL dynamically for SEO
+  const refreshSiteData = useCallback(
+    async (overrideToken?: string | null) => {
+      const token = overrideToken !== undefined ? overrideToken : sessionToken;
+      try {
+        const res = await fetch('/api/site-data', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const json = (await res.json()) as SiteContentState;
+        if (json && json.config && Array.isArray(json.services)) {
+          setSiteData(json);
+        }
+      } catch {
+        // Fallback smoothly to INITIAL_SITE_STATE if backend not reachable
+      }
+    },
+    [sessionToken]
+  );
+
   useEffect(() => {
-    const currentUrl = window.location.origin + window.location.pathname;
+    void refreshSiteData();
+  }, [refreshSiteData]);
+
+  // Listen to browser Back / Forward navigation
+  useEffect(() => {
+    const onPopState = () => {
+      setCurrentPath(normalizePath(window.location.pathname));
+      window.scrollTo({ top: 0 });
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  // Update dynamic canonical URL & page title per route for SEO
+  useEffect(() => {
+    const currentUrl = window.location.origin + currentPath;
     let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement('link');
@@ -43,37 +92,85 @@ export default function App() {
       document.head.appendChild(ogUrl);
     }
     ogUrl.content = currentUrl;
-  }, []);
 
-  // Listen for Google Maps Platform demo key quota events
+    const brand = siteData.config.brandName;
+    if (currentPath === '/services') {
+      document.title = `Spa Services & Massages | ${brand} Electronic City, Bangalore`;
+    } else if (currentPath === '/gallery') {
+      document.title = `Sanctuary Gallery | ${brand} Electronic City, Bangalore`;
+    } else if (currentPath === '/offers') {
+      document.title = `Offers & Couple Packages | ${brand} Electronic City, Bangalore`;
+    } else if (currentPath === '/blog' || currentPath.startsWith('/blog/')) {
+      document.title = `Wellness Journal & Blog | ${brand} Electronic City, Bangalore`;
+    } else if (currentPath === '/contact') {
+      document.title = `Book Appointment & Location | ${brand} Electronic City, Bangalore`;
+    } else if (currentPath === '/client-portal') {
+      document.title = `Client Content Studio | ${brand}`;
+    } else {
+      document.title = `${brand} | Best Luxury Spa in Electronic City, Bangalore`;
+    }
+  }, [currentPath, siteData.config.brandName]);
+
   useEffect(() => {
     const handleQuotaExceeded = () => setMapsQuotaExceeded(true);
     window.addEventListener('gmp-quota-exceeded', handleQuotaExceeded);
     return () => window.removeEventListener('gmp-quota-exceeded', handleQuotaExceeded);
   }, []);
 
-  const scrollToBooking = useCallback(() => {
-    const target = document.getElementById('booking');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  const navigate = useCallback((path: string) => {
+    const clean = normalizePath(path);
+    window.history.pushState({}, '', clean);
+    setCurrentPath(clean);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  const goToBooking = useCallback(() => {
+    const bookingEl = document.getElementById('booking');
+    if (bookingEl && (currentPath === '/' || currentPath === '/contact')) {
+      bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    window.history.pushState({}, '', '/contact');
+    setCurrentPath('/contact');
+    window.setTimeout(() => {
+      const el = document.getElementById('booking');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else window.scrollTo({ top: 0 });
+    }, 80);
+  }, [currentPath]);
 
   const handleSelectService = useCallback(
     (serviceName: string) => {
       setPreselectedService(serviceName);
-      scrollToBooking();
+      goToBooking();
     },
-    [scrollToBooking]
+    [goToBooking]
   );
 
   const handleApplyOfferToForm = useCallback(
     (offerNote: string) => {
       setPreselectedOfferNote(offerNote);
-      scrollToBooking();
+      goToBooking();
     },
-    [scrollToBooking]
+    [goToBooking]
   );
+
+  // Separate Client Dashboard Page (isolated from public spa navigation & sticky bar)
+  if (currentPath === '/client-portal') {
+    return (
+      <ClientPortalPage
+        siteData={siteData}
+        sessionToken={sessionToken}
+        onTokenChange={setSessionToken}
+        onRefreshSiteData={refreshSiteData}
+        onBackToWebsite={() => navigate('/')}
+      />
+    );
+  }
+
+  const blogSlug = currentPath.startsWith('/blog/')
+    ? decodeURIComponent(currentPath.slice('/blog/'.length))
+    : null;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF6EE] text-[#1C1512]">
@@ -101,24 +198,184 @@ export default function App() {
         </div>
       )}
 
-      <Navbar onBookClick={scrollToBooking} />
+      <Navbar
+        currentPath={currentPath}
+        brandName={siteData.config.brandName}
+        onNavigate={navigate}
+        onBookClick={goToBooking}
+      />
 
       <main className="flex-1">
-        <HeroSection onBookClick={scrollToBooking} />
-        <WelcomeOfferSection onApplyOfferToForm={handleApplyOfferToForm} />
-        <ServicesSection onSelectService={handleSelectService} />
-        <WhyChooseSection />
-        <GallerySection onBookClick={scrollToBooking} />
-        <OffersSection />
-        <LocationSection />
-        <BookingFormSection
-          preselectedService={preselectedService}
-          preselectedOfferNote={preselectedOfferNote}
-        />
+        {/* PAGE 1: HOME */}
+        {currentPath === '/' && (
+          <>
+            <HeroSection
+              config={siteData.config}
+              onBookClick={goToBooking}
+              onExploreServices={() => navigate('/services')}
+            />
+            <WelcomeOfferSection
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              onApplyOfferToForm={handleApplyOfferToForm}
+            />
+            <ServicesSection
+              services={siteData.services}
+              config={siteData.config}
+              onSelectService={handleSelectService}
+              previewLimit={3}
+              onViewAllClick={() => navigate('/services')}
+            />
+            <WhyChooseSection />
+            <GallerySection
+              items={siteData.gallery}
+              onBookClick={goToBooking}
+              previewLimit={3}
+              onViewAllClick={() => navigate('/gallery')}
+            />
+            <BlogSection
+              blogs={siteData.blogs}
+              config={siteData.config}
+              mode="preview"
+              onOpenArticle={(slug) => navigate(`/blog/${encodeURIComponent(slug)}`)}
+              onViewAllBlogs={() => navigate('/blog')}
+              onBookNowClick={goToBooking}
+            />
+            <OffersSection offers={siteData.offers} config={siteData.config} />
+            <LocationSection config={siteData.config} />
+            <BookingFormSection
+              preselectedService={preselectedService}
+              preselectedOfferNote={preselectedOfferNote}
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              offers={siteData.offers}
+            />
+          </>
+        )}
+
+        {/* PAGE 2: SERVICES */}
+        {currentPath === '/services' && (
+          <>
+            <PageHeaderBanner
+              eyebrow="Treatments & Massage Menu"
+              title="Signature Spa Therapies"
+              subtitle={`Explore every massage and holistic wellness treatment at ${siteData.config.brandName}, ${siteData.config.area}.`}
+              onBackHome={() => navigate('/')}
+            />
+            <ServicesSection
+              services={siteData.services}
+              config={siteData.config}
+              onSelectService={handleSelectService}
+            />
+            <WhyChooseSection />
+            <BookingFormSection
+              preselectedService={preselectedService}
+              preselectedOfferNote={preselectedOfferNote}
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              offers={siteData.offers}
+            />
+          </>
+        )}
+
+        {/* PAGE 3: GALLERY */}
+        {currentPath === '/gallery' && (
+          <>
+            <PageHeaderBanner
+              eyebrow="Inside Our Sanctuary"
+              title="Spa Interiors, Suites & Rituals"
+              subtitle="Step inside our private candlelit therapy rooms, couple sanctuary, steam facilities, and quiet relaxation lounge."
+              onBackHome={() => navigate('/')}
+            />
+            <GallerySection items={siteData.gallery} onBookClick={goToBooking} />
+            <BookingFormSection
+              preselectedService={preselectedService}
+              preselectedOfferNote={preselectedOfferNote}
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              offers={siteData.offers}
+            />
+          </>
+        )}
+
+        {/* PAGE 4: OFFERS & PACKAGES */}
+        {currentPath === '/offers' && (
+          <>
+            <PageHeaderBanner
+              eyebrow="Seasonal Privileges"
+              title="Wellness Packages & Offers"
+              subtitle="Curated weekday escapes, couple sanctuary packages, and first-visit welcome privileges."
+              onBackHome={() => navigate('/')}
+            />
+            <WelcomeOfferSection
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              onApplyOfferToForm={handleApplyOfferToForm}
+            />
+            <OffersSection offers={siteData.offers} config={siteData.config} />
+            <BookingFormSection
+              preselectedService={preselectedService}
+              preselectedOfferNote={preselectedOfferNote}
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              offers={siteData.offers}
+            />
+          </>
+        )}
+
+        {/* PAGE 5: WELLNESS BLOG */}
+        {(currentPath === '/blog' || currentPath.startsWith('/blog/')) && (
+          <>
+            {!blogSlug && (
+              <PageHeaderBanner
+                eyebrow="Spark Wellness Journal"
+                title="Spa Insights, Massage Guides & Stories"
+                subtitle="Articles, wellness tips, and sanctuary stories published directly by our spa team."
+                onBackHome={() => navigate('/')}
+              />
+            )}
+            <BlogSection
+              blogs={siteData.blogs}
+              config={siteData.config}
+              mode="full"
+              activeSlug={blogSlug}
+              onOpenArticle={(slug) => navigate(`/blog/${encodeURIComponent(slug)}`)}
+              onBackToBlogList={() => navigate('/blog')}
+              onBookNowClick={goToBooking}
+            />
+          </>
+        )}
+
+        {/* PAGE 6: CONTACT & BOOKING */}
+        {currentPath === '/contact' && (
+          <>
+            <PageHeaderBanner
+              eyebrow="Visit & Reserve"
+              title="Contact & Book Appointment"
+              subtitle={`Reserve your preferred time slot on WhatsApp or visit ${siteData.config.brandName} in ${siteData.config.area}.`}
+              onBackHome={() => navigate('/')}
+            />
+            <LocationSection config={siteData.config} />
+            <BookingFormSection
+              preselectedService={preselectedService}
+              preselectedOfferNote={preselectedOfferNote}
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              offers={siteData.offers}
+            />
+          </>
+        )}
       </main>
 
-      <Footer />
-      <MobileStickyBar />
+      <Footer config={siteData.config} onNavigate={navigate} />
+      <MobileStickyBar config={siteData.config} />
     </div>
   );
 }

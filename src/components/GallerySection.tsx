@@ -1,24 +1,33 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { ChevronLeft, ChevronRight, Expand, X } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Expand, X } from 'lucide-react';
 import { GALLERY_DATA, GalleryItem } from '../data/spaData';
 import { SpaImage } from './SpaImage';
 
 interface GallerySectionProps {
+  items?: GalleryItem[];
   onBookClick: () => void;
+  previewLimit?: number;
+  onViewAllClick?: () => void;
 }
 
 type GalleryFilter = 'all' | 'interiors' | 'suites' | 'rituals';
 
-export function GallerySection({ onBookClick }: GallerySectionProps) {
+export function GallerySection({
+  items = GALLERY_DATA,
+  onBookClick,
+  previewLimit,
+  onViewAllClick,
+}: GallerySectionProps) {
   const [filter, setFilter] = useState<GalleryFilter>('all');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
+  const filteredItems =
+    filter === 'all' ? items : items.filter((item) => item.spaceCategory === filter);
+
   const visibleItems =
-    filter === 'all'
-      ? GALLERY_DATA
-      : GALLERY_DATA.filter((item) => item.spaceCategory === filter);
+    previewLimit && filter === 'all' ? filteredItems.slice(0, previewLimit) : filteredItems;
 
   useEffect(() => {
     if (lightboxIndex === null) return;
@@ -26,9 +35,7 @@ export function GallerySection({ onBookClick }: GallerySectionProps) {
       if (e.key === 'Escape') {
         setLightboxIndex(null);
       } else if (e.key === 'ArrowRight') {
-        setLightboxIndex((prev) =>
-          prev === null ? null : (prev + 1) % visibleItems.length
-        );
+        setLightboxIndex((prev) => (prev === null ? null : (prev + 1) % visibleItems.length));
       } else if (e.key === 'ArrowLeft') {
         setLightboxIndex((prev) =>
           prev === null ? null : (prev - 1 + visibleItems.length) % visibleItems.length
@@ -40,14 +47,11 @@ export function GallerySection({ onBookClick }: GallerySectionProps) {
   }, [lightboxIndex, visibleItems.length]);
 
   const activeItem: GalleryItem | null =
-    lightboxIndex !== null && visibleItems[lightboxIndex]
-      ? visibleItems[lightboxIndex]
-      : null;
+    lightboxIndex !== null && visibleItems[lightboxIndex] ? visibleItems[lightboxIndex] : null;
 
   return (
     <section id="gallery" className="py-16 md:py-24 bg-[#FAF6EE]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header & Filter */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-10 border-b border-[#C69749]/25">
           <div className="max-w-2xl">
             <p className="text-xs sm:text-sm font-medium tracking-[0.16em] text-[#8F6422] mb-3">
@@ -86,9 +90,7 @@ export function GallerySection({ onBookClick }: GallerySectionProps) {
                     setLightboxIndex(null);
                   }}
                   className={`px-3 py-2 min-h-[40px] text-xs sm:text-sm font-medium rounded-md transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749] ${
-                    active
-                      ? 'bg-[#5C1728] text-[#FAF6EE] shadow-sm'
-                      : 'text-[#524740] hover:text-[#1C1512]'
+                    active ? 'bg-[#5C1728] text-[#FAF6EE] shadow-sm' : 'text-[#524740] hover:text-[#1C1512]'
                   }`}
                 >
                   {tab.label}
@@ -98,7 +100,6 @@ export function GallerySection({ onBookClick }: GallerySectionProps) {
           </div>
         </div>
 
-        {/* Asymmetric Editorial Bento Grid */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-12 gap-5 md:auto-rows-[250px]">
           {visibleItems.map((item, idx) => (
             <motion.button
@@ -110,7 +111,7 @@ export function GallerySection({ onBookClick }: GallerySectionProps) {
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.45, delay: idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
               className={`group relative overflow-hidden rounded-xl bg-[#EFE7D8] border border-[#C69749]/20 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749] min-h-[260px] md:min-h-0 ${
-                filter === 'all' ? item.spanClass : 'md:col-span-4 md:row-span-1'
+                filter === 'all' && !previewLimit ? item.spanClass : 'md:col-span-4 md:row-span-1'
               }`}
             >
               <SpaImage
@@ -137,9 +138,21 @@ export function GallerySection({ onBookClick }: GallerySectionProps) {
             </motion.button>
           ))}
         </div>
+
+        {onViewAllClick && (
+          <div className="mt-10 text-center">
+            <button
+              type="button"
+              onClick={onViewAllClick}
+              className="inline-flex items-center gap-2 px-6 py-3 min-h-[46px] border border-[#5C1728] text-[#5C1728] hover:bg-[#5C1728] hover:text-[#FAF6EE] text-sm font-semibold rounded-md transition-colors cursor-pointer"
+            >
+              <span>Explore Full Sanctuary Gallery</span>
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Lightbox Modal */}
       {activeItem && (
         <div
           role="dialog"
@@ -175,9 +188,7 @@ export function GallerySection({ onBookClick }: GallerySectionProps) {
                     type="button"
                     onClick={() =>
                       setLightboxIndex((prev) =>
-                        prev === null
-                          ? 0
-                          : (prev - 1 + visibleItems.length) % visibleItems.length
+                        prev === null ? 0 : (prev - 1 + visibleItems.length) % visibleItems.length
                       )
                     }
                     aria-label="Previous gallery photo"
@@ -188,9 +199,7 @@ export function GallerySection({ onBookClick }: GallerySectionProps) {
                   <button
                     type="button"
                     onClick={() =>
-                      setLightboxIndex((prev) =>
-                        prev === null ? 0 : (prev + 1) % visibleItems.length
-                      )
+                      setLightboxIndex((prev) => (prev === null ? 0 : (prev + 1) % visibleItems.length))
                     }
                     aria-label="Next gallery photo"
                     className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#1C1512]/75 text-[#FAF6EE] hover:bg-[#1C1512] flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D9B263]"

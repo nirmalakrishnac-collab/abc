@@ -1,11 +1,12 @@
 import { MessageCircle, Navigation, Phone } from 'lucide-react';
 import { buildDirectionsUrl, buildWhatsAppUrl, SPA_CONFIG } from '../data/spaData';
 
-export function MobileStickyBar() {
+export function MobileStickyBar({ config = SPA_CONFIG }: { config?: typeof SPA_CONFIG }) {
   const whatsappUrl = buildWhatsAppUrl(
-    `Namaste ${SPA_CONFIG.brandName} (${SPA_CONFIG.area}), I would like to book an appointment.`
+    `Namaste ${config.brandName} (${config.area}), I would like to book an appointment.`,
+    config.whatsappNumber
   );
-  const directionsUrl = buildDirectionsUrl();
+  const directionsUrl = buildDirectionsUrl(config.coordinates, config.brandName, config.area);
 
   return (
     <nav
@@ -24,7 +25,7 @@ export function MobileStickyBar() {
         </a>
 
         <a
-          href={SPA_CONFIG.phoneHref}
+          href={config.phoneHref}
           className="flex items-center justify-center gap-1.5 min-h-[44px] px-2.5 py-2 bg-[#5C1728] text-[#FAF6EE] rounded-full text-xs font-medium active:scale-[0.98] transition-transform whitespace-nowrap"
         >
           <Phone className="w-4 h-4 text-[#E8C57B] shrink-0" aria-hidden="true" />

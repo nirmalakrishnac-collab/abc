@@ -1,19 +1,27 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { Check, MessageCircle } from 'lucide-react';
-import { buildWhatsAppUrl, OFFERS_DATA, SPA_CONFIG } from '../data/spaData';
+import { buildWhatsAppUrl, OFFERS_DATA, SPA_CONFIG, SpaOffer } from '../data/spaData';
 import { LotusDivider } from './IndianMotifs';
 
-export function OffersSection() {
+interface OffersSectionProps {
+  offers?: SpaOffer[];
+  config?: typeof SPA_CONFIG;
+}
+
+export function OffersSection({
+  offers = OFFERS_DATA,
+  config = SPA_CONFIG,
+}: OffersSectionProps) {
   const prefersReducedMotion = useReducedMotion();
 
   const generalOfferWhatsappUrl = buildWhatsAppUrl(
-    `Namaste ${SPA_CONFIG.brandName} (${SPA_CONFIG.area}), I would like to enquire about your current spa offers and wellness packages.`
+    `Namaste ${config.brandName} (${config.area}), I would like to enquire about your current spa offers and wellness packages.`,
+    config.whatsappNumber
   );
 
   return (
     <section id="offers" className="py-16 md:py-24 bg-[#1C1512] text-[#FAF6EE]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Conversion Banner */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-10 border-b border-[#D9B263]/25">
           <div className="max-w-2xl">
             <p className="text-xs sm:text-sm font-medium tracking-[0.16em] text-[#E8C57B] mb-3">
@@ -23,7 +31,7 @@ export function OffersSection() {
               Your Relaxation Starts Here.
             </h2>
             <p className="mt-4 text-base text-[#DFD3C0] leading-relaxed">
-              Thoughtfully composed wellness packages and weekday restorative rituals at Spark Spa, Electronic City. Reach our concierge directly on WhatsApp for today&apos;s availability and seasonal rates.
+              Thoughtfully composed wellness packages and weekday restorative rituals at {config.brandName}, {config.area}. Reach our concierge directly on WhatsApp for today&apos;s availability and seasonal rates.
             </p>
           </div>
 
@@ -40,11 +48,11 @@ export function OffersSection() {
 
         <LotusDivider tone="ivory" className="mt-8" />
 
-        {/* Editable Offers Grid */}
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {OFFERS_DATA.map((offer, idx) => {
+          {offers.map((offer, idx) => {
             const offerUrl = buildWhatsAppUrl(
-              `Namaste ${SPA_CONFIG.brandName} (${SPA_CONFIG.area}), I would like to enquire about the "${offer.title}" package. Please share availability and pricing.`
+              `Namaste ${config.brandName} (${config.area}), I would like to enquire about the "${offer.title}" package. Please share availability and pricing.`,
+              config.whatsappNumber
             );
             return (
               <motion.div
@@ -68,10 +76,7 @@ export function OffersSection() {
                 <ul className="mt-6 space-y-3 flex-1">
                   {offer.inclusions.map((item) => (
                     <li key={item} className="flex items-start gap-2.5 text-sm text-[#EFE3CE]">
-                      <Check
-                        className="w-4 h-4 text-[#E8C57B] shrink-0 mt-0.5"
-                        aria-hidden="true"
-                      />
+                      <Check className="w-4 h-4 text-[#E8C57B] shrink-0 mt-0.5" aria-hidden="true" />
                       <span>{item}</span>
                     </li>
                   ))}
