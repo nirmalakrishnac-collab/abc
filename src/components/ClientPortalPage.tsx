@@ -29,6 +29,7 @@ interface ClientPortalPageProps {
   sessionToken: string | null;
   onTokenChange: (token: string | null) => void;
   onRefreshSiteData: (token?: string | null) => Promise<void>;
+  onApplySiteDataPatch: (patch: Partial<SiteContentState>) => void;
   onBackToWebsite: () => void;
 }
 
@@ -40,6 +41,7 @@ export function ClientPortalPage({
   sessionToken,
   onTokenChange,
   onRefreshSiteData,
+  onApplySiteDataPatch,
   onBackToWebsite,
 }: ClientPortalPageProps) {
   const [authStatusLoading, setAuthStatusLoading] = useState(true);
@@ -379,13 +381,17 @@ export function ClientPortalPage({
         status: blogStatus,
       }),
     });
-    const data = (await res.json()) as { error?: string };
+    const data = (await res.json()) as { blogs?: BlogPost[]; error?: string };
     if (!res.ok) {
       showError(data.error || 'Could not save blog article.');
       return;
     }
     resetBlogForm();
-    await onRefreshSiteData(sessionToken);
+    if (Array.isArray(data.blogs)) {
+      onApplySiteDataPatch({ blogs: data.blogs });
+    } else {
+      await onRefreshSiteData(sessionToken);
+    }
     showToast(isEdit ? 'Blog article updated!' : 'Blog article published to live website!');
   };
 
@@ -395,7 +401,12 @@ export function ClientPortalPage({
       headers: { Authorization: `Bearer ${sessionToken}` },
     });
     if (res.ok) {
-      await onRefreshSiteData(sessionToken);
+      const data = (await res.json()) as { blogs?: BlogPost[] };
+      if (Array.isArray(data.blogs)) {
+        onApplySiteDataPatch({ blogs: data.blogs });
+      } else {
+        await onRefreshSiteData(sessionToken);
+      }
       showToast('Blog article removed.');
     }
   };
@@ -441,7 +452,7 @@ export function ClientPortalPage({
         image: galImage,
       }),
     });
-    const data = (await res.json()) as { error?: string };
+    const data = (await res.json()) as { gallery?: GalleryItem[]; error?: string };
     if (!res.ok) {
       showError(data.error || 'Could not add gallery photo.');
       return;
@@ -449,7 +460,11 @@ export function ClientPortalPage({
     setGalTitle('');
     setGalCaption('');
     setGalImage('');
-    await onRefreshSiteData(sessionToken);
+    if (Array.isArray(data.gallery)) {
+      onApplySiteDataPatch({ gallery: data.gallery });
+    } else {
+      await onRefreshSiteData(sessionToken);
+    }
     showToast('Photo added to live Sanctuary Gallery!');
   };
 
@@ -459,7 +474,12 @@ export function ClientPortalPage({
       headers: { Authorization: `Bearer ${sessionToken}` },
     });
     if (res.ok) {
-      await onRefreshSiteData(sessionToken);
+      const data = (await res.json()) as { gallery?: GalleryItem[] };
+      if (Array.isArray(data.gallery)) {
+        onApplySiteDataPatch({ gallery: data.gallery });
+      } else {
+        await onRefreshSiteData(sessionToken);
+      }
       showToast('Gallery photo deleted.');
     }
   };
@@ -477,8 +497,13 @@ export function ClientPortalPage({
       body: JSON.stringify(editingService),
     });
     if (res.ok) {
+      const data = (await res.json()) as { services?: SpaService[] };
       setEditingService(null);
-      await onRefreshSiteData(sessionToken);
+      if (Array.isArray(data.services)) {
+        onApplySiteDataPatch({ services: data.services });
+      } else {
+        await onRefreshSiteData(sessionToken);
+      }
       showToast('Service updated!');
     } else {
       showError('Failed to update service.');
@@ -502,14 +527,18 @@ export function ClientPortalPage({
         image: newSvcImage,
       }),
     });
-    const data = (await res.json()) as { error?: string };
+    const data = (await res.json()) as { services?: SpaService[]; error?: string };
     if (!res.ok) {
       showError(data.error || 'Could not add service.');
       return;
     }
     setNewSvcName('');
     setNewSvcDesc('');
-    await onRefreshSiteData(sessionToken);
+    if (Array.isArray(data.services)) {
+      onApplySiteDataPatch({ services: data.services });
+    } else {
+      await onRefreshSiteData(sessionToken);
+    }
     showToast('New service published live to website!');
   };
 
@@ -519,7 +548,12 @@ export function ClientPortalPage({
       headers: { Authorization: `Bearer ${sessionToken}` },
     });
     if (res.ok) {
-      await onRefreshSiteData(sessionToken);
+      const data = (await res.json()) as { services?: SpaService[] };
+      if (Array.isArray(data.services)) {
+        onApplySiteDataPatch({ services: data.services });
+      } else {
+        await onRefreshSiteData(sessionToken);
+      }
       showToast('Service removed from website.');
     } else {
       showError('Could not remove service.');
@@ -538,8 +572,13 @@ export function ClientPortalPage({
       body: JSON.stringify(editingOffer),
     });
     if (res.ok) {
+      const data = (await res.json()) as { offers?: SpaOffer[] };
       setEditingOffer(null);
-      await onRefreshSiteData(sessionToken);
+      if (Array.isArray(data.offers)) {
+        onApplySiteDataPatch({ offers: data.offers });
+      } else {
+        await onRefreshSiteData(sessionToken);
+      }
       showToast('Offer package updated!');
     }
   };
@@ -570,7 +609,15 @@ export function ClientPortalPage({
       }),
     });
     if (res.ok) {
-      await onRefreshSiteData(sessionToken);
+      const data = (await res.json()) as {
+        config?: SiteContentState['config'];
+        welcomeOffer?: SiteContentState['welcomeOffer'];
+      };
+      if (data.config && data.welcomeOffer) {
+        onApplySiteDataPatch({ config: data.config, welcomeOffer: data.welcomeOffer });
+      } else {
+        await onRefreshSiteData(sessionToken);
+      }
       showToast('Business settings & WhatsApp number updated!');
     } else {
       showError('Failed to save settings.');

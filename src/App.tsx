@@ -65,6 +65,13 @@ export default function App() {
     void refreshSiteData();
   }, [refreshSiteData]);
 
+  const applySiteDataPatch = useCallback((patch: Partial<SiteContentState>) => {
+    setSiteData((prev) => ({
+      ...prev,
+      ...patch,
+    }));
+  }, []);
+
   // Listen to browser Back / Forward navigation
   useEffect(() => {
     const onPopState = () => {
@@ -196,6 +203,7 @@ export default function App() {
         sessionToken={sessionToken}
         onTokenChange={setSessionToken}
         onRefreshSiteData={refreshSiteData}
+        onApplySiteDataPatch={applySiteDataPatch}
         onBackToWebsite={() => navigate('/')}
       />
     );
