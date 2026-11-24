@@ -4,6 +4,10 @@
  * Seed defaults below are automatically merged with any blogs, photos,
  * services, offers, or contact updates saved via client-dashboard.php.
  */
+if (!headers_sent()) {
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+}
 
 $data_dir = __DIR__ . '/data';
 $uploads_dir = __DIR__ . '/uploads';

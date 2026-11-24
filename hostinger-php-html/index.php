@@ -115,7 +115,7 @@ $salon_services = array_values(array_filter($services, fn($s) => ($s['category']
       </div>
 
       <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <?php foreach (array_slice($spa_services, 0, 3) as $svc):
+        <?php foreach ($spa_services as $svc):
           $img = is_safe_asset_path((string)$svc['image']) ? $svc['image'] : 'images/therapy_swedish_action_1795111730062.jpg';
           $svc_wa_url = build_whatsapp_url("Namaste {$spa_config['brand_name']} ({$spa_config['area']}), I would like to book \"{$svc['name']}\" and claim any active offer.", $spa_config);
         ?>
@@ -157,7 +157,7 @@ $salon_services = array_values(array_filter($services, fn($s) => ($s['category']
       </div>
 
       <div class="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <?php foreach (array_slice($salon_services, 0, 3) as $svc):
+        <?php foreach ($salon_services as $svc):
           $img = is_safe_asset_path((string)$svc['image']) ? $svc['image'] : 'images/salon_hair_styling_1795541015663.jpg';
           $svc_wa_url = build_whatsapp_url("Namaste {$spa_config['brand_name']} ({$spa_config['area']}), I would like to book \"{$svc['name']}\" and claim any active salon offer.", $spa_config);
         ?>

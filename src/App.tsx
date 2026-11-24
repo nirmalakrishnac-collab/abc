@@ -46,6 +46,7 @@ export default function App() {
       const token = overrideToken !== undefined ? overrideToken : sessionToken;
       try {
         const res = await fetch('/api/site-data', {
+          cache: 'no-store',
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (!res.ok) return;
@@ -255,7 +256,6 @@ export default function App() {
               services={siteData.services}
               config={siteData.config}
               onSelectService={handleSelectService}
-              previewLimit={3}
               onViewAllClick={() => navigate('/spa-services')}
             />
             <ServicesSection
@@ -263,7 +263,6 @@ export default function App() {
               services={siteData.services}
               config={siteData.config}
               onSelectService={handleSelectService}
-              previewLimit={3}
               onViewAllClick={() => navigate('/salon-services')}
             />
             <WhyChooseSection />

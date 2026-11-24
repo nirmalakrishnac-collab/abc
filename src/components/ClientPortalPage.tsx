@@ -52,6 +52,9 @@ export function ClientPortalPage({
   const [setupBloggerPassword, setSetupBloggerPassword] = useState('');
   const [newBloggerPassword, setNewBloggerPassword] = useState('');
   const [savingBloggerPass, setSavingBloggerPass] = useState(false);
+  const [newOwnerPassword, setNewOwnerPassword] = useState('');
+  const [confirmNewOwnerPassword, setConfirmNewOwnerPassword] = useState('');
+  const [savingOwnerPass, setSavingOwnerPass] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
@@ -119,6 +122,7 @@ export function ClientPortalPage({
     async function checkStatus() {
       try {
         const res = await fetch('/api/client/status', {
+          cache: 'no-store',
           headers: sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {},
         });
         const contentType = res.headers.get('content-type') || '';
@@ -282,6 +286,41 @@ export function ClientPortalPage({
       showError('Unable to reach server. Please try again.');
     } finally {
       setSavingBloggerPass(false);
+    }
+  };
+
+  const handleSaveOwnerPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (newOwnerPassword.length < 8) {
+      showError('New Owner password must be at least 8 characters.');
+      return;
+    }
+    if (newOwnerPassword !== confirmNewOwnerPassword) {
+      showError('New Owner passwords do not match.');
+      return;
+    }
+    setSavingOwnerPass(true);
+    try {
+      const res = await fetch('/api/client/owner-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionToken}`,
+        },
+        body: JSON.stringify({ newPassword: newOwnerPassword }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        showError(data.error || 'Could not update Owner password.');
+        return;
+      }
+      setNewOwnerPassword('');
+      setConfirmNewOwnerPassword('');
+      showToast('Owner password updated successfully!');
+    } catch {
+      showError('Unable to reach server. Please try again.');
+    } finally {
+      setSavingOwnerPass(false);
     }
   };
 
@@ -471,7 +510,20 @@ export function ClientPortalPage({
     setNewSvcName('');
     setNewSvcDesc('');
     await onRefreshSiteData(sessionToken);
-    showToast('New spa service added!');
+    showToast('New service published live to website!');
+  };
+
+  const handleDeleteService = async (id: string) => {
+    const res = await fetch(`/api/client/services/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${sessionToken}` },
+    });
+    if (res.ok) {
+      await onRefreshSiteData(sessionToken);
+      showToast('Service removed from website.');
+    } else {
+      showError('Could not remove service.');
+    }
   };
 
   const handleSaveOfferEdit = async (e: FormEvent) => {
@@ -1046,13 +1098,23 @@ export function ClientPortalPage({
                           <p className="text-xs font-medium text-[#8F6422]">{svc.categoryLabel}</p>
                           <h3 className="font-serif text-xl font-medium text-[#1C1512]">{svc.name}</h3>
                           <p className="text-xs text-[#524740]">{svc.duration} · {svc.pricePlaceholder}</p>
-                          <button
-                            type="button"
-                            onClick={() => setEditingService(svc)}
-                            className="text-xs font-semibold text-[#5C1728] hover:underline cursor-pointer"
-                          >
-                            Edit Price / Duration / Photo →
-                          </button>
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              onClick={() => setEditingService(svc)}
+                              className="text-xs font-semibold text-[#5C1728] hover:underline cursor-pointer"
+                            >
+                              Edit Price / Duration / Photo →
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteService(svc.id)}
+                              className="inline-flex items-center gap-1 text-xs font-medium text-red-700 hover:underline cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                              <span>Remove</span>
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1333,75 +1395,127 @@ export function ClientPortalPage({
                   </button>
                 </form>
 
-                {/* Client Access: Blogs & Photos Only Login Manager */}
-                <form
-                  onSubmit={handleSaveBloggerPassword}
-                  className="lg:col-span-5 bg-white border border-[#C69749]/35 rounded-xl p-6 sm:p-7 space-y-4 shadow-sm"
-                >
-                  <div className="flex items-center gap-2.5 text-[#5C1728]">
-                    <KeyRound className="w-5 h-5" aria-hidden="true" />
-                    <h2 className="font-serif text-2xl font-medium text-[#1C1512]">
-                      Client Access: Blogs &amp; Photos Only
-                    </h2>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-[#524740] leading-relaxed">
-                    Want to give your client access ONLY to upload blogs and photos without touching your prices, offers, or WhatsApp number? Set a dedicated <strong>Client Blogs-Only Password</strong> below and share the portal link.
-                  </p>
-
-                  <div className="p-3.5 rounded-lg bg-[#FAF6EE] border border-[#C69749]/30 space-y-2">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8F6422]">
-                      Client Login URL
-                    </p>
-                    <div className="flex items-center justify-between gap-2">
-                      <code className="text-xs text-[#1C1512] truncate">
-                        {typeof window !== 'undefined' ? `${window.location.origin}/client-portal` : '/client-portal'}
-                      </code>
-                      <button
-                        type="button"
-                        onClick={handleCopyPortalUrl}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#F3EBD9] hover:bg-[#E7DABF] text-xs font-semibold text-[#1C1512] shrink-0 cursor-pointer"
-                      >
-                        <Copy className="w-3.5 h-3.5" aria-hidden="true" />
-                        <span>Copy Link</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-[#524740]">
-                    Status:{' '}
-                    <span className={`font-semibold ${hasBloggerAccount ? 'text-[#1B4D3E]' : 'text-[#5C1728]'}`}>
-                      {hasBloggerAccount ? 'Active (Blogs-Only Password Set)' : 'Not Yet Set'}
-                    </span>
-                  </div>
-
-                  <div>
-                    <label htmlFor="blogger-pass-manage" className="block text-xs font-medium text-[#1C1512] mb-1.5">
-                      {hasBloggerAccount ? 'New Client Blogs-Only Password (min 8 chars)' : 'Create Client Blogs-Only Password (min 8 chars)'}
-                    </label>
-                    <input
-                      id="blogger-pass-manage"
-                      type="password"
-                      required
-                      value={newBloggerPassword}
-                      onChange={(e) => setNewBloggerPassword(e.target.value)}
-                      placeholder="Enter separate password for client"
-                      className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={savingBloggerPass}
-                    className="w-full py-3 px-5 min-h-[46px] bg-[#5C1728] hover:bg-[#4A1120] text-[#FAF6EE] text-sm font-semibold rounded-md transition-colors cursor-pointer disabled:opacity-60"
+                <div className="lg:col-span-5 space-y-6">
+                  <form
+                    onSubmit={handleSaveOwnerPassword}
+                    className="bg-white border border-[#C69749]/35 rounded-xl p-6 sm:p-7 space-y-4 shadow-sm"
                   >
-                    {savingBloggerPass
-                      ? 'Saving...'
-                      : hasBloggerAccount
-                      ? 'Update Client Blogs-Only Password'
-                      : 'Enable Client Blogs-Only Login'}
-                  </button>
-                </form>
+                    <div className="flex items-center gap-2.5 text-[#1C1512]">
+                      <Lock className="w-5 h-5 text-[#5C1728]" aria-hidden="true" />
+                      <h2 className="font-serif text-2xl font-medium text-[#1C1512]">
+                        Update Owner Password
+                      </h2>
+                    </div>
+                    <p className="text-xs text-[#524740]">
+                      Change your Owner (Full Access) login password anytime.
+                    </p>
+                    <div>
+                      <label htmlFor="owner-pass-new" className="block text-xs font-medium text-[#1C1512] mb-1">
+                        New Owner Password (min 8 chars)
+                      </label>
+                      <input
+                        id="owner-pass-new"
+                        type="password"
+                        required
+                        value={newOwnerPassword}
+                        onChange={(e) => setNewOwnerPassword(e.target.value)}
+                        placeholder="Enter new owner password"
+                        className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="owner-pass-confirm" className="block text-xs font-medium text-[#1C1512] mb-1">
+                        Confirm New Owner Password
+                      </label>
+                      <input
+                        id="owner-pass-confirm"
+                        type="password"
+                        required
+                        value={confirmNewOwnerPassword}
+                        onChange={(e) => setConfirmNewOwnerPassword(e.target.value)}
+                        placeholder="Re-enter new owner password"
+                        className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={savingOwnerPass}
+                      className="w-full py-3 px-5 min-h-[46px] bg-[#1C1512] hover:bg-[#332722] text-[#FAF6EE] text-sm font-semibold rounded-md transition-colors cursor-pointer disabled:opacity-60"
+                    >
+                      {savingOwnerPass ? 'Updating...' : 'Update Owner Password'}
+                    </button>
+                  </form>
+
+                  {/* Client Access: Blogs & Photos Only Login Manager */}
+                  <form
+                    onSubmit={handleSaveBloggerPassword}
+                    className="bg-white border border-[#C69749]/35 rounded-xl p-6 sm:p-7 space-y-4 shadow-sm"
+                  >
+                    <div className="flex items-center gap-2.5 text-[#5C1728]">
+                      <KeyRound className="w-5 h-5" aria-hidden="true" />
+                      <h2 className="font-serif text-2xl font-medium text-[#1C1512]">
+                        Client Access: Blogs &amp; Photos Only
+                      </h2>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-[#524740] leading-relaxed">
+                      Want to give your client access ONLY to upload blogs and photos without touching your prices, offers, or WhatsApp number? Set a dedicated <strong>Client Blogs-Only Password</strong> below and share the portal link.
+                    </p>
+
+                    <div className="p-3.5 rounded-lg bg-[#FAF6EE] border border-[#C69749]/30 space-y-2">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8F6422]">
+                        Client Login URL
+                      </p>
+                      <div className="flex items-center justify-between gap-2">
+                        <code className="text-xs text-[#1C1512] truncate">
+                          {typeof window !== 'undefined' ? `${window.location.origin}/client-portal` : '/client-portal'}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={handleCopyPortalUrl}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#F3EBD9] hover:bg-[#E7DABF] text-xs font-semibold text-[#1C1512] shrink-0 cursor-pointer"
+                        >
+                          <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Copy Link</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-[#524740]">
+                      Status:{' '}
+                      <span className={`font-semibold ${hasBloggerAccount ? 'text-[#1B4D3E]' : 'text-[#5C1728]'}`}>
+                        {hasBloggerAccount ? 'Active (Blogs-Only Password Set)' : 'Not Yet Set'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label htmlFor="blogger-pass-manage" className="block text-xs font-medium text-[#1C1512] mb-1.5">
+                        {hasBloggerAccount ? 'New Client Blogs-Only Password (min 8 chars)' : 'Create Client Blogs-Only Password (min 8 chars)'}
+                      </label>
+                      <input
+                        id="blogger-pass-manage"
+                        type="password"
+                        required
+                        value={newBloggerPassword}
+                        onChange={(e) => setNewBloggerPassword(e.target.value)}
+                        placeholder="Enter separate password for client"
+                        className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={savingBloggerPass}
+                      className="w-full py-3 px-5 min-h-[46px] bg-[#5C1728] hover:bg-[#4A1120] text-[#FAF6EE] text-sm font-semibold rounded-md transition-colors cursor-pointer disabled:opacity-60"
+                    >
+                      {savingBloggerPass
+                        ? 'Saving...'
+                        : hasBloggerAccount
+                        ? 'Update Client Blogs-Only Password'
+                        : 'Enable Client Blogs-Only Login'}
+                    </button>
+                  </form>
+                </div>
               </div>
             )}
           </div>

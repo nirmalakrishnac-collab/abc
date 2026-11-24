@@ -10,16 +10,16 @@ Pages Included:
 6. blog.php           (Wellness & Beauty Journal & Blog Reader)
 7. contact.php        (Location, Google Maps & Booking Form)
 
-Separate Client Dashboard (with Owner & Client Blogs-Only Login):
+Separate Client Dashboard (Default Password: spark123):
 - client-dashboard.php
   Visit https://yourdomain.com/client-dashboard.php (or click "Client Portal" in the footer).
-  On first visit, set your Owner Password (full access) and optionally a separate
-  "Client Blogs & Photos Only Password" (you can also set or change it anytime under
-  Business & WhatsApp -> Client Access: Blogs & Photos Only).
-  - Logging in with Owner Password shows all 4 tabs (Blogs, Gallery, Services, Settings).
-  - Logging in with Client Blogs-Only Password restricts the dashboard strictly to
-    Blogs & Articles (with cover photo uploads) and Photo Gallery Upload, keeping
-    services, prices, offers, and WhatsApp settings locked.
+  Default Owner Password: spark123
+  - Any new blog article or Spa/Salon service uploaded in the dashboard publishes
+    immediately to the live website (Home + dedicated pages).
+  - You can change the Owner Password anytime under Business & WhatsApp -> Update Owner Password.
+  - You can also set a separate "Client Blogs & Photos Only Password" under
+    Business & WhatsApp -> Client Access: Blogs & Photos Only so a client can
+    upload blogs and photos without seeing prices or WhatsApp settings.
 
 Upload Steps to Hostinger (PHP/HTML Plan):
 1. Upload spark-spa-hostinger.zip inside File Manager -> public_html.

@@ -65,6 +65,20 @@ function writeAdminAuth(record: StoredAdminAuth): void {
   fs.renameSync(tmpPath, AUTH_PATH);
 }
 
+function ensureDefaultAdminAuth(): StoredAdminAuth {
+  const existing = readAdminAuth();
+  if (existing) return existing;
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync('spark123', salt, 64).toString('hex');
+  const record: StoredAdminAuth = {
+    salt,
+    hash,
+    createdAt: new Date().toISOString(),
+  };
+  writeAdminAuth(record);
+  return record;
+}
+
 function readSiteStore(): SiteContentState {
   if (!fs.existsSync(STORE_PATH)) {
     fs.writeFileSync(STORE_PATH, JSON.stringify(INITIAL_SITE_STATE, null, 2), 'utf8');
@@ -215,8 +229,11 @@ async function startServer(): Promise<void> {
     express.static(UPLOADS_DIR, { maxAge: '7d' })
   );
 
+  ensureDefaultAdminAuth();
+
   // Public site content endpoint
   app.get('/api/site-data', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
     const role = getSessionRole(req.headers.authorization);
     const store = readSiteStore();
     res.json({
@@ -227,13 +244,14 @@ async function startServer(): Promise<void> {
 
   // Client portal auth status
   app.get('/api/client/status', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
     const envConfigured = getEnvPasscode().length > 0;
-    const savedAuth = readAdminAuth();
+    const savedAuth = ensureDefaultAdminAuth();
     const role = getSessionRole(req.headers.authorization);
     res.json({
       envConfigured,
-      needsSetup: !envConfigured && savedAuth === null,
-      hasBloggerAccount: Boolean(getEnvBloggerPasscode() || savedAuth?.bloggerHash),
+      needsSetup: false,
+      hasBloggerAccount: Boolean(getEnvBloggerPasscode() || savedAuth.bloggerHash),
       authenticated: Boolean(role),
       role,
     });
@@ -293,7 +311,7 @@ async function startServer(): Promise<void> {
 
     const envOwner = getEnvPasscode();
     const envBlogger = getEnvBloggerPasscode();
-    const saved = readAdminAuth();
+    const saved = ensureDefaultAdminAuth();
 
     if (envOwner && verifyDigestMatch(password, envOwner)) {
       res.json({ token: signSessionToken('owner'), role: 'owner' });
@@ -304,28 +322,49 @@ async function startServer(): Promise<void> {
       return;
     }
 
-    if (saved) {
-      const ownerDerived = crypto.scryptSync(password, saved.salt, 64);
-      const ownerStored = Buffer.from(saved.hash, 'hex');
-      if (ownerDerived.length === ownerStored.length && crypto.timingSafeEqual(ownerDerived, ownerStored)) {
-        res.json({ token: signSessionToken('owner'), role: 'owner' });
+    const ownerDerived = crypto.scryptSync(password, saved.salt, 64);
+    const ownerStored = Buffer.from(saved.hash, 'hex');
+    if (ownerDerived.length === ownerStored.length && crypto.timingSafeEqual(ownerDerived, ownerStored)) {
+      res.json({ token: signSessionToken('owner'), role: 'owner' });
+      return;
+    }
+    if (saved.bloggerSalt && saved.bloggerHash) {
+      const bDerived = crypto.scryptSync(password, saved.bloggerSalt, 64);
+      const bStored = Buffer.from(saved.bloggerHash, 'hex');
+      if (bDerived.length === bStored.length && crypto.timingSafeEqual(bDerived, bStored)) {
+        res.json({ token: signSessionToken('blogger'), role: 'blogger' });
         return;
-      }
-      if (saved.bloggerSalt && saved.bloggerHash) {
-        const bDerived = crypto.scryptSync(password, saved.bloggerSalt, 64);
-        const bStored = Buffer.from(saved.bloggerHash, 'hex');
-        if (bDerived.length === bStored.length && crypto.timingSafeEqual(bDerived, bStored)) {
-          res.json({ token: signSessionToken('blogger'), role: 'blogger' });
-          return;
-        }
       }
     }
 
-    if (!envOwner && !saved) {
-      res.status(400).json({ error: 'Portal setup required first.' });
+    res.status(401).json({ error: 'Incorrect password. Please try again.' });
+  });
+
+  // Owner-only: Update Owner login password
+  app.post('/api/client/owner-password', requireOwnerAuth, (req, res) => {
+    const newPassword = typeof req.body?.newPassword === 'string' ? req.body.newPassword : '';
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      res.status(400).json({ error: 'Owner password must be between 8 and 128 characters.' });
       return;
     }
-    res.status(401).json({ error: 'Incorrect password. Please try again.' });
+    const existing = ensureDefaultAdminAuth();
+    if (existing.bloggerSalt && existing.bloggerHash) {
+      const bCheck = crypto.scryptSync(newPassword, existing.bloggerSalt, 64);
+      const bStored = Buffer.from(existing.bloggerHash, 'hex');
+      if (bCheck.length === bStored.length && crypto.timingSafeEqual(bCheck, bStored)) {
+        res.status(400).json({ error: 'Owner password must differ from the Client Blogs-Only password.' });
+        return;
+      }
+    }
+    const envBlogger = getEnvBloggerPasscode();
+    if (envBlogger && verifyDigestMatch(newPassword, envBlogger)) {
+      res.status(400).json({ error: 'Owner password must differ from the Client Blogs-Only password.' });
+      return;
+    }
+    const nextSalt = crypto.randomBytes(16).toString('hex');
+    const nextHash = crypto.scryptSync(newPassword, nextSalt, 64).toString('hex');
+    writeAdminAuth({ ...existing, salt: nextSalt, hash: nextHash });
+    res.json({ ok: true });
   });
 
   // Owner-only: Set or update Client Blogs-Only password
@@ -335,33 +374,22 @@ async function startServer(): Promise<void> {
       res.status(400).json({ error: 'Client Blogs-Only password must be between 8 and 128 characters.' });
       return;
     }
-    const existing = readAdminAuth();
+    const existing = ensureDefaultAdminAuth();
     const bSalt = crypto.randomBytes(16).toString('hex');
     const bHash = crypto.scryptSync(bloggerPassword, bSalt, 64).toString('hex');
 
-    if (existing) {
-      const ownerCheck = crypto.scryptSync(bloggerPassword, existing.salt, 64);
-      const ownerStored = Buffer.from(existing.hash, 'hex');
-      if (ownerCheck.length === ownerStored.length && crypto.timingSafeEqual(ownerCheck, ownerStored)) {
-        res.status(400).json({ error: 'Client Blogs-Only password must differ from your Owner password.' });
-        return;
-      }
-      writeAdminAuth({ ...existing, bloggerSalt: bSalt, bloggerHash: bHash });
-    } else {
-      const envOwner = getEnvPasscode();
-      if (envOwner && bloggerPassword === envOwner) {
-        res.status(400).json({ error: 'Client Blogs-Only password must differ from your Owner passcode.' });
-        return;
-      }
-      const placeholderSalt = crypto.randomBytes(16).toString('hex');
-      writeAdminAuth({
-        salt: placeholderSalt,
-        hash: crypto.scryptSync(crypto.randomBytes(32).toString('hex'), placeholderSalt, 64).toString('hex'),
-        bloggerSalt: bSalt,
-        bloggerHash: bHash,
-        createdAt: new Date().toISOString(),
-      });
+    const ownerCheck = crypto.scryptSync(bloggerPassword, existing.salt, 64);
+    const ownerStored = Buffer.from(existing.hash, 'hex');
+    if (ownerCheck.length === ownerStored.length && crypto.timingSafeEqual(ownerCheck, ownerStored)) {
+      res.status(400).json({ error: 'Client Blogs-Only password must differ from your Owner password.' });
+      return;
     }
+    const envOwner = getEnvPasscode();
+    if (envOwner && verifyDigestMatch(bloggerPassword, envOwner)) {
+      res.status(400).json({ error: 'Client Blogs-Only password must differ from your Owner passcode.' });
+      return;
+    }
+    writeAdminAuth({ ...existing, bloggerSalt: bSalt, bloggerHash: bHash });
     res.json({ ok: true });
   });
 
@@ -548,7 +576,7 @@ async function startServer(): Promise<void> {
         : '/src/assets/images/therapy_swedish_action_1795111730062.jpg',
       imageAlt: `${name.slice(0, 80)} at Spark Spa Electronic City Bangalore`,
     };
-    store.services = [...store.services, newService];
+    store.services = [newService, ...store.services];
     writeSiteStore(store);
     res.json({ service: newService, services: store.services });
   });

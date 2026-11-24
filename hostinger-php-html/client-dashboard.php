@@ -7,9 +7,8 @@ session_start();
 require_once __DIR__ . '/config.php';
 
 $auth_file = __DIR__ . '/data/admin-auth.php';
-$has_password = file_exists($auth_file);
 $auth_data = ['owner_hash' => '', 'blogger_hash' => ''];
-if ($has_password) {
+if (file_exists($auth_file)) {
     $loaded_auth = @include $auth_file;
     if (is_string($loaded_auth)) {
         $auth_data['owner_hash'] = $loaded_auth;
@@ -17,10 +16,13 @@ if ($has_password) {
         $auth_data['owner_hash'] = (string)($loaded_auth['owner_hash'] ?? '');
         $auth_data['blogger_hash'] = (string)($loaded_auth['blogger_hash'] ?? '');
     }
-    if ($auth_data['owner_hash'] === '') {
-        $has_password = false;
-    }
 }
+if ($auth_data['owner_hash'] === '') {
+    $auth_data['owner_hash'] = password_hash('spark123', PASSWORD_DEFAULT);
+    $seed_php = "<?php\nreturn " . var_export($auth_data, true) . ";\n";
+    @file_put_contents($auth_file, $seed_php, LOCK_EX);
+}
+$has_password = true;
 $has_blogger_password = $auth_data['blogger_hash'] !== '';
 $is_logged_in = !empty($_SESSION['spark_client_authed']);
 $user_role = $is_logged_in ? (($_SESSION['spark_role'] ?? 'owner') === 'blogger' ? 'blogger' : 'owner') : null;
@@ -263,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($flash_err === '' && strlen($sname) >= 2 && strlen($sdesc) >= 6) {
                         $cat_labels = ['massage' => 'Classic Bodywork', 'salon' => 'Hair & Beauty Salon', 'holistic' => 'Holistic & Couples'];
                         $fallback_img = $scat === 'salon' ? 'images/salon_hair_styling_1795541015663.jpg' : 'images/therapy_swedish_action_1795111730062.jpg';
-                        $cms_payload['services'][] = [
+                        array_unshift($cms_payload['services'], [
                             'id' => 'svc-' . bin2hex(random_bytes(4)),
                             'index' => str_pad((string)(count($cms_payload['services']) + 1), 2, '0', STR_PAD_LEFT),
                             'name' => $sname,
@@ -274,13 +276,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             'price' => $sprice,
                             'image' => $uploaded ?: $fallback_img,
                             'alt' => $sname . ' at ' . $spa_config['brand_name'] . ' Electronic City Bangalore',
-                        ];
+                        ]);
                         save_cms_data($cms_payload);
                         $services = $cms_payload['services'];
-                        $flash_ok = 'New service added to website!';
+                        $flash_ok = 'New service published live to website!';
                     } elseif ($flash_err === '') {
                         $flash_err = 'Please enter service name and short description.';
                     }
+                }
+            } elseif ($action === 'delete_service') {
+                if ($user_role !== 'owner') {
+                    $flash_err = 'Access denied. Blogs & Photos Only accounts cannot remove services.';
+                } else {
+                    $del_id = (string)($_POST['service_id'] ?? '');
+                    $cms_payload['services'] = array_values(array_filter($cms_payload['services'], fn($s) => ($s['id'] ?? '') !== $del_id));
+                    save_cms_data($cms_payload);
+                    $services = $cms_payload['services'];
+                    $flash_ok = 'Service removed from website.';
                 }
             } elseif ($action === 'save_settings') {
                 if ($user_role !== 'owner') {
@@ -320,6 +332,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $flash_ok = 'Client Blogs & Photos Only password saved! Share this password with your client.';
                         } else {
                             $flash_err = 'Could not update auth file inside data/ directory.';
+                        }
+                    }
+                }
+            } elseif ($action === 'update_owner_password') {
+                if ($user_role !== 'owner') {
+                    $flash_err = 'Access denied. Only the Owner can change the Owner password.';
+                } else {
+                    $np = (string)($_POST['new_owner_password'] ?? '');
+                    $cp = (string)($_POST['confirm_owner_password'] ?? '');
+                    if (strlen($np) < 8) {
+                        $flash_err = 'New Owner password must be at least 8 characters.';
+                    } elseif ($np !== $cp) {
+                        $flash_err = 'New Owner passwords do not match.';
+                    } elseif ($auth_data['blogger_hash'] !== '' && password_verify($np, $auth_data['blogger_hash'])) {
+                        $flash_err = 'Owner password must differ from the Client Blogs-Only password.';
+                    } else {
+                        $auth_data['owner_hash'] = password_hash($np, PASSWORD_DEFAULT);
+                        $php_code = "<?php\nreturn " . var_export($auth_data, true) . ";\n";
+                        if (@file_put_contents($auth_file, $php_code, LOCK_EX) !== false) {
+                            $flash_ok = 'Owner password updated successfully!';
+                        } else {
+                            $flash_err = 'Could not write updated password inside data/ directory.';
                         }
                     }
                 }
@@ -556,22 +590,30 @@ if (!empty($_GET['edit_blog'])) {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <?php foreach ($services as $s): ?>
-          <form method="POST" enctype="multipart/form-data" class="bg-white border border-[#C69749]/30 rounded-xl p-6 space-y-3">
-            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>" />
-            <input type="hidden" name="action" value="update_service" />
-            <input type="hidden" name="service_id" value="<?= e($s['id']) ?>" />
-            <div class="flex items-center justify-between text-[11px] font-medium text-[#8F6422]">
-              <span><?= e($s['index']) ?> · <?= ($s['category'] ?? '') === 'salon' ? 'Salon Service' : 'Spa Service' ?></span>
-            </div>
-            <input type="text" name="name" value="<?= e($s['name']) ?>" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm font-semibold" />
-            <div class="grid grid-cols-2 gap-3">
-              <input type="text" name="duration" value="<?= e($s['duration']) ?>" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs" />
-              <input type="text" name="price" value="<?= e($s['price']) ?>" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs" />
-            </div>
-            <textarea name="description" rows="2" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs"><?= e($s['description']) ?></textarea>
-            <input type="file" name="service_photo" accept="image/jpeg,image/png,image/webp" class="w-full text-xs" />
-            <button type="submit" class="px-4 py-2 bg-[#1B4D3E] text-[#FAF6EE] text-xs font-semibold rounded-md cursor-pointer">Save Service</button>
-          </form>
+          <div class="bg-white border border-[#C69749]/30 rounded-xl p-6 space-y-3">
+            <form method="POST" enctype="multipart/form-data" class="space-y-3">
+              <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>" />
+              <input type="hidden" name="action" value="update_service" />
+              <input type="hidden" name="service_id" value="<?= e($s['id']) ?>" />
+              <div class="flex items-center justify-between text-[11px] font-medium text-[#8F6422]">
+                <span><?= e($s['index']) ?> · <?= ($s['category'] ?? '') === 'salon' ? 'Salon Service' : 'Spa Service' ?></span>
+              </div>
+              <input type="text" name="name" value="<?= e($s['name']) ?>" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm font-semibold" />
+              <div class="grid grid-cols-2 gap-3">
+                <input type="text" name="duration" value="<?= e($s['duration']) ?>" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs" />
+                <input type="text" name="price" value="<?= e($s['price']) ?>" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs" />
+              </div>
+              <textarea name="description" rows="2" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs"><?= e($s['description']) ?></textarea>
+              <input type="file" name="service_photo" accept="image/jpeg,image/png,image/webp" class="w-full text-xs" />
+              <button type="submit" class="px-4 py-2 bg-[#1B4D3E] text-[#FAF6EE] text-xs font-semibold rounded-md cursor-pointer">Save Service</button>
+            </form>
+            <form method="POST" class="pt-1">
+              <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>" />
+              <input type="hidden" name="action" value="delete_service" />
+              <input type="hidden" name="service_id" value="<?= e($s['id']) ?>" />
+              <button type="submit" class="text-xs text-red-700 hover:underline cursor-pointer">Delete Service</button>
+            </form>
+          </div>
           <?php endforeach; ?>
         </div>
       </div>
@@ -623,24 +665,42 @@ if (!empty($_GET['edit_blog'])) {
           <button type="submit" class="px-6 py-3 bg-[#1B4D3E] text-[#FAF6EE] text-sm font-semibold rounded-md cursor-pointer">Save Settings</button>
         </form>
 
-        <form method="POST" class="lg:col-span-5 bg-white border border-[#C69749]/35 rounded-xl p-6 space-y-4">
-          <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>" />
-          <input type="hidden" name="action" value="save_blogger_password" />
-          <h2 class="font-serif text-2xl font-medium text-[#1C1512]">Client Access: Blogs &amp; Photos Only</h2>
-          <p class="text-xs sm:text-sm text-[#524740] leading-relaxed">
-            Set a separate <strong>Client Blogs-Only Password</strong> so your client can log into <code>client-dashboard.php</code> ONLY to upload blogs and gallery photos—without access to prices or WhatsApp settings.
-          </p>
-          <p class="text-xs text-[#524740]">
-            Status: <strong class="<?= $has_blogger_password ? 'text-[#1B4D3E]' : 'text-[#5C1728]' ?>"><?= $has_blogger_password ? 'Active (Blogs-Only Password Set)' : 'Not Yet Set' ?></strong>
-          </p>
-          <div>
-            <label class="block text-xs font-medium mb-1"><?= $has_blogger_password ? 'New Client Blogs-Only Password (min 8 chars)' : 'Create Client Blogs-Only Password (min 8 chars)' ?></label>
-            <input type="password" name="blogger_password" required placeholder="Separate password for client" class="w-full px-3.5 py-2.5 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm" />
-          </div>
-          <button type="submit" class="w-full py-3 bg-[#5C1728] hover:bg-[#4A1120] text-[#FAF6EE] text-sm font-semibold rounded-md cursor-pointer">
-            <?= $has_blogger_password ? 'Update Client Blogs-Only Password' : 'Enable Client Blogs-Only Login' ?>
-          </button>
-        </form>
+        <div class="lg:col-span-5 space-y-6">
+          <form method="POST" class="bg-white border border-[#C69749]/35 rounded-xl p-6 space-y-4">
+            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>" />
+            <input type="hidden" name="action" value="update_owner_password" />
+            <h2 class="font-serif text-2xl font-medium text-[#1C1512]">Update Owner Password</h2>
+            <p class="text-xs text-[#524740]">Change your Owner (Full Access) login password anytime.</p>
+            <div>
+              <label class="block text-xs font-medium mb-1">New Owner Password (min 8 chars)</label>
+              <input type="password" name="new_owner_password" required placeholder="Enter new owner password" class="w-full px-3.5 py-2.5 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium mb-1">Confirm New Owner Password</label>
+              <input type="password" name="confirm_owner_password" required placeholder="Re-enter new owner password" class="w-full px-3.5 py-2.5 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm" />
+            </div>
+            <button type="submit" class="w-full py-3 bg-[#1C1512] hover:bg-[#332722] text-[#FAF6EE] text-sm font-semibold rounded-md cursor-pointer">Update Owner Password</button>
+          </form>
+
+          <form method="POST" class="bg-white border border-[#C69749]/35 rounded-xl p-6 space-y-4">
+            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>" />
+            <input type="hidden" name="action" value="save_blogger_password" />
+            <h2 class="font-serif text-2xl font-medium text-[#1C1512]">Client Access: Blogs &amp; Photos Only</h2>
+            <p class="text-xs sm:text-sm text-[#524740] leading-relaxed">
+              Set a separate <strong>Client Blogs-Only Password</strong> so your client can log into <code>client-dashboard.php</code> ONLY to upload blogs and gallery photos—without access to prices or WhatsApp settings.
+            </p>
+            <p class="text-xs text-[#524740]">
+              Status: <strong class="<?= $has_blogger_password ? 'text-[#1B4D3E]' : 'text-[#5C1728]' ?>"><?= $has_blogger_password ? 'Active (Blogs-Only Password Set)' : 'Not Yet Set' ?></strong>
+            </p>
+            <div>
+              <label class="block text-xs font-medium mb-1"><?= $has_blogger_password ? 'New Client Blogs-Only Password (min 8 chars)' : 'Create Client Blogs-Only Password (min 8 chars)' ?></label>
+              <input type="password" name="blogger_password" required placeholder="Separate password for client" class="w-full px-3.5 py-2.5 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm" />
+            </div>
+            <button type="submit" class="w-full py-3 bg-[#5C1728] hover:bg-[#4A1120] text-[#FAF6EE] text-sm font-semibold rounded-md cursor-pointer">
+              <?= $has_blogger_password ? 'Update Client Blogs-Only Password' : 'Enable Client Blogs-Only Login' ?>
+            </button>
+          </form>
+        </div>
       </div>
       <?php endif; ?>
     <?php endif; ?>
