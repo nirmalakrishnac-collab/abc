@@ -33,6 +33,30 @@ $nav_pages = [
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script>
+    (function () {
+      try {
+        var origFetch = window.fetch;
+        var desc = Object.getOwnPropertyDescriptor(window, 'fetch') || Object.getOwnPropertyDescriptor(Object.getPrototypeOf(window), 'fetch');
+        if (desc && desc.get && !desc.set && desc.configurable) {
+          var activeFetch = origFetch;
+          Object.defineProperty(window, 'fetch', {
+            configurable: true,
+            enumerable: true,
+            get: function () { return activeFetch; },
+            set: function (nextFetch) { if (typeof nextFetch === 'function') activeFetch = nextFetch; }
+          });
+        }
+      } catch (_) {}
+      window.addEventListener('error', function (event) {
+        var src = (event && (event.filename || (event.error && event.error.stack))) || '';
+        if (typeof src === 'string' && src.indexOf('chrome-extension://') !== -1) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+    })();
+  </script>
   <title><?= e($page_title) ?></title>
   <meta name="description" content="<?= e($page_description) ?>" />
   <meta name="keywords" content="<?= e($page_keywords) ?>" />
