@@ -79,7 +79,7 @@ export function ClientPortalPage({
   // Service Editor State
   const [editingService, setEditingService] = useState<SpaService | null>(null);
   const [newSvcName, setNewSvcName] = useState('');
-  const [newSvcCategory, setNewSvcCategory] = useState<'massage' | 'holistic'>('massage');
+  const [newSvcCategory, setNewSvcCategory] = useState<'massage' | 'salon' | 'holistic'>('massage');
   const [newSvcDuration, setNewSvcDuration] = useState('Duration: Custom Session');
   const [newSvcPrice, setNewSvcPrice] = useState('Tariff: Price Upon Enquiry');
   const [newSvcDesc, setNewSvcDesc] = useState('');
@@ -1106,10 +1106,14 @@ export function ClientPortalPage({
                         />
                         <select
                           value={newSvcCategory}
-                          onChange={(e) => setNewSvcCategory(e.target.value === 'holistic' ? 'holistic' : 'massage')}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setNewSvcCategory(val === 'holistic' ? 'holistic' : val === 'salon' ? 'salon' : 'massage');
+                          }}
                           className="w-full px-3 py-2 min-h-[42px] bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm"
                         >
                           <option value="massage">Massage Category</option>
+                          <option value="salon">Hair &amp; Beauty Salon Category</option>
                           <option value="holistic">Holistic &amp; Couples Category</option>
                         </select>
                         <div className="grid grid-cols-2 gap-2.5">

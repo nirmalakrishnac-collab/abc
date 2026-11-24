@@ -33,10 +33,10 @@ export function WhyChooseSection() {
               The Spark Standard
             </p>
             <h2 className="font-serif text-3xl sm:text-4xl leading-[1.15] font-medium text-[#1C1512] text-balance">
-              Why Guests Choose Spark Spa
+              Why Guests Choose Spark Spa &amp; Salon
             </h2>
             <p className="mt-4 text-base text-[#524740] leading-relaxed">
-              Designed as a serene Indian wellness retreat right inside Electronic City, Bangalore, every detail from acoustic privacy to warm linen care reflects five-star hospitality.
+              Designed as Electronic City&apos;s complete luxury sanctuary for body massages, hair spa rituals, facials, and five-star hospitality under one serene roof.
             </p>
           </div>
 

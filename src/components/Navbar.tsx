@@ -3,6 +3,8 @@ import { Menu, X } from 'lucide-react';
 
 export type AppRoute =
   | '/'
+  | '/spa-services'
+  | '/salon-services'
   | '/services'
   | '/gallery'
   | '/offers'
@@ -19,7 +21,8 @@ interface NavbarProps {
 
 const NAV_LINKS: { label: string; path: AppRoute }[] = [
   { label: 'Home', path: '/' },
-  { label: 'Services', path: '/services' },
+  { label: 'Spa', path: '/spa-services' },
+  { label: 'Salon', path: '/salon-services' },
   { label: 'Gallery', path: '/gallery' },
   { label: 'Offers', path: '/offers' },
   { label: 'Blog', path: '/blog' },
@@ -36,8 +39,8 @@ export function Navbar({ currentPath, brandName, onNavigate, onBookClick }: Navb
 
   return (
     <header className="relative md:sticky md:top-0 z-40 bg-[#FAF6EE]/95 backdrop-blur-md border-b border-[#C69749]/25">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-18 flex items-center justify-between gap-6">
-        {/* Zone 1: Single-element Brand Wordmark */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-18 flex items-center justify-between gap-4 lg:gap-6">
+        {/* Zone 1: Brand Wordmark */}
         <a
           href="/"
           onClick={(e) => {
@@ -45,13 +48,13 @@ export function Navbar({ currentPath, brandName, onNavigate, onBookClick }: Navb
             onNavigate('/');
             setMobileMenuOpen(false);
           }}
-          className="font-serif text-2xl md:text-[27px] font-semibold tracking-tight text-[#1C1512] whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749] rounded-sm"
+          className="font-serif text-xl sm:text-2xl md:text-[26px] font-semibold tracking-tight text-[#1C1512] whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C69749] rounded-sm"
         >
           {brandName}
         </a>
 
-        {/* Zone 2: 6 single-line page links */}
-        <nav aria-label="Primary navigation" className="hidden md:flex items-center gap-6">
+        {/* Zone 2: Separate Spa & Salon Navigation Links */}
+        <nav aria-label="Primary navigation" className="hidden md:flex items-center gap-4 lg:gap-6">
           {NAV_LINKS.map((link) => {
             const active = isActive(link.path);
             return (
@@ -75,7 +78,7 @@ export function Navbar({ currentPath, brandName, onNavigate, onBookClick }: Navb
           })}
         </nav>
 
-        {/* Zone 3: Single Primary Action (+ compact mobile drawer toggle) */}
+        {/* Zone 3: Primary CTA + Mobile Toggle */}
         <div className="flex items-center gap-3 shrink-0">
           <button
             type="button"

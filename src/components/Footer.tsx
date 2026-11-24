@@ -30,7 +30,7 @@ export function Footer({ config = SPA_CONFIG, onNavigate }: FooterProps) {
               {config.brandName}
             </p>
             <p className="mt-3 text-sm text-[#CFC3B0] max-w-sm leading-relaxed">
-              A serene luxury spa in Electronic City, Bangalore offering tailored massage therapies, aromatherapy, and restorative couple wellness rituals.
+              A serene luxury spa and beauty salon in Electronic City, Bangalore offering tailored massage therapies, couple wellness suites, hair spa, keratin rituals, and radiance facials.
             </p>
           </div>
 
@@ -41,8 +41,11 @@ export function Footer({ config = SPA_CONFIG, onNavigate }: FooterProps) {
             <a href="/" onClick={(e) => handleLink(e, '/')} className="block hover:text-[#FAF6EE] transition-colors">
               Home Sanctuary
             </a>
-            <a href="/services" onClick={(e) => handleLink(e, '/services')} className="block hover:text-[#FAF6EE] transition-colors">
-              Spa Services
+            <a href="/spa-services" onClick={(e) => handleLink(e, '/spa-services')} className="block hover:text-[#FAF6EE] transition-colors">
+              Spa Massages &amp; Therapies
+            </a>
+            <a href="/salon-services" onClick={(e) => handleLink(e, '/salon-services')} className="block hover:text-[#FAF6EE] transition-colors">
+              Hair &amp; Beauty Salon
             </a>
             <a href="/gallery" onClick={(e) => handleLink(e, '/gallery')} className="block hover:text-[#FAF6EE] transition-colors">
               Sanctuary Gallery

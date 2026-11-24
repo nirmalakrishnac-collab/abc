@@ -1,13 +1,14 @@
-Spark Spa — 6-Page Hostinger PHP/HTML + Separate Client Dashboard
-======================================================================
+Spark Spa & Salon — 6-Page Hostinger PHP/HTML + Separate Client Dashboard
+============================================================================
 
 Pages Included:
-1. index.php        (Home Sanctuary)
-2. services.php     (Services & Massages)
-3. gallery.php      (Sanctuary Photo Gallery)
-4. offers.php       (Offers & Wellness Packages)
-5. blog.php         (Wellness Journal & Blog Reader)
-6. contact.php      (Location, Google Maps & Booking Form)
+1. index.php          (Home Sanctuary — Separate Spa & Salon Sections + WhatsApp/Call Offer Modal)
+2. spa-services.php   (Dedicated Spa & Body Massage Therapies Page)
+3. salon-services.php (Dedicated Hair, Skin & Beauty Salon Services Page)
+4. gallery.php        (Spa Suites & Salon Studio Photo Gallery)
+5. offers.php         (Offers & Wellness/Salon Packages)
+6. blog.php           (Wellness & Beauty Journal & Blog Reader)
+7. contact.php        (Location, Google Maps & Booking Form)
 
 Separate Client Dashboard (with Owner & Client Blogs-Only Login):
 - client-dashboard.php

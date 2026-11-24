@@ -1,11 +1,9 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { ArrowRight, Gift, MessageCircle, X } from 'lucide-react';
+import { Check, Gift, MessageCircle, Phone, X } from 'lucide-react';
 import {
   buildWhatsAppUrl,
-  SERVICES_DATA,
   SPA_CONFIG,
-  SpaService,
   WELCOME_OFFER,
   WelcomeOfferConfig,
 } from '../data/spaData';
@@ -14,32 +12,13 @@ import { LotusDivider } from './IndianMotifs';
 interface WelcomeOfferSectionProps {
   config?: typeof SPA_CONFIG;
   welcomeOffer?: WelcomeOfferConfig;
-  services?: SpaService[];
-  onApplyOfferToForm: (offerNote: string) => void;
-}
-
-function formatTime24To12(time24: string): string {
-  if (!time24 || !time24.includes(':')) return time24;
-  const [hStr, mStr] = time24.split(':');
-  const h = Number(hStr);
-  if (Number.isNaN(h)) return time24;
-  const suffix = h >= 12 ? 'PM' : 'AM';
-  const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return `${hour12}:${mStr} ${suffix}`;
 }
 
 export function WelcomeOfferSection({
   config = SPA_CONFIG,
   welcomeOffer = WELCOME_OFFER,
-  services = SERVICES_DATA,
-  onApplyOfferToForm,
 }: WelcomeOfferSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [guestName, setGuestName] = useState('');
-  const [guestPhone, setGuestPhone] = useState('');
-  const [selectedService, setSelectedService] = useState(services[0]?.name || 'Swedish Massage');
-  const [preferredTime, setPreferredTime] = useState('16:30');
-  const [formError, setFormError] = useState<string | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
@@ -47,46 +26,13 @@ export function WelcomeOfferSection({
     const timer = window.setTimeout(() => {
       setModalOpen(true);
       sessionStorage.setItem('spark_offer_seen', '1');
-    }, 1800);
+    }, 1600);
     return () => window.clearTimeout(timer);
   }, []);
 
   const handleOpenOffer = () => {
     sessionStorage.setItem('spark_offer_seen', '1');
     setModalOpen(true);
-  };
-
-  const handleClaimSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const digits = guestPhone.replace(/\D/g, '');
-    if (!guestName.trim() || digits.length < 10) {
-      setFormError('Please enter your name and 10-digit mobile number to book this offer.');
-      return;
-    }
-    setFormError(null);
-
-    const formattedTime = formatTime24To12(preferredTime);
-    const msg = [
-      `Namaste ${config.brandName} (${config.area}),`,
-      `I would like to claim the Website Welcome Offer (${welcomeOffer.offerCode}) & book an appointment:`,
-      ``,
-      `• Name: ${guestName.trim()}`,
-      `• Mobile: ${guestPhone.trim()}`,
-      `• Preferred Therapy: ${selectedService}`,
-      `• My Preferred Time: ${formattedTime}`,
-      ``,
-      `Please confirm slot availability on WhatsApp.`,
-    ].join('\n');
-
-    const url = buildWhatsAppUrl(msg, config.whatsappNumber);
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    setModalOpen(false);
   };
 
   const directOfferUrl = buildWhatsAppUrl(welcomeOffer.whatsappGreeting, config.whatsappNumber);
@@ -115,24 +61,32 @@ export function WelcomeOfferSection({
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={handleOpenOffer}
-                className="cta-shimmer inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[46px] bg-[#D9B263] hover:bg-[#E4C178] active:scale-[0.98] text-[#1C1512] text-sm font-semibold rounded-md transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FAF6EE]"
-              >
-                <Gift className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>View Offer &amp; Book Now</span>
-              </button>
-
               <a
                 href={directOfferUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cta-shimmer inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[46px] bg-[#1B4D3E] hover:bg-[#22604D] active:scale-[0.98] text-[#FAF6EE] text-sm font-medium rounded-md border border-[#E8C57B]/35 transition-all duration-150 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8C57B]"
+                className="cta-shimmer inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[48px] bg-[#1B4D3E] hover:bg-[#22604D] active:scale-[0.98] text-[#FAF6EE] text-sm font-semibold rounded-md border border-[#E8C57B]/35 transition-all duration-150 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8C57B]"
               >
-                <MessageCircle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <MessageCircle className="w-4 h-4 text-[#E8C57B] shrink-0" aria-hidden="true" />
                 <span>{welcomeOffer.ctaLabel}</span>
               </a>
+
+              <a
+                href={config.phoneHref}
+                className="cta-shimmer inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[48px] bg-[#D9B263] hover:bg-[#E4C178] active:scale-[0.98] text-[#1C1512] text-sm font-semibold rounded-md transition-all duration-150 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FAF6EE]"
+              >
+                <Phone className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>Call Now to Claim</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={handleOpenOffer}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-3.5 min-h-[48px] border border-[#E8C57B]/40 hover:bg-white/10 text-[#E8C57B] text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+              >
+                <Gift className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>Offer Details</span>
+              </button>
             </div>
           </div>
         </div>
@@ -155,11 +109,11 @@ export function WelcomeOfferSection({
               initial={prefersReducedMotion ? false : { opacity: 0, y: 24, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={prefersReducedMotion ? undefined : { opacity: 0, y: 16, scale: 0.97 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-lg bg-[#FAF6EE] border border-[#C69749]/50 rounded-xl overflow-hidden shadow-2xl"
+              className="relative w-full max-w-md bg-[#FAF6EE] border border-[#C69749]/55 rounded-2xl overflow-hidden shadow-2xl"
             >
-              <div className="bg-[#5C1728] text-[#FAF6EE] px-6 py-5 border-b border-[#D9B263]/35">
+              <div className="bg-[#5C1728] text-[#FAF6EE] px-6 py-6 border-b border-[#D9B263]/35">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
@@ -168,120 +122,68 @@ export function WelcomeOfferSection({
                 >
                   <X className="w-5 h-5" />
                 </button>
-                <p className="text-xs font-medium tracking-[0.16em] text-[#E8C57B]">
+                <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[#E8C57B]">
                   {welcomeOffer.eyebrow}
                 </p>
                 <h3
                   id="welcome-offer-modal-title"
-                  className="mt-1 font-serif text-2xl sm:text-3xl font-medium text-[#FAF6EE] pr-8"
+                  className="mt-1.5 font-serif text-2xl sm:text-3xl font-medium text-[#FAF6EE] pr-8 leading-tight"
                 >
                   {welcomeOffer.title}
                 </h3>
               </div>
 
-              <div className="p-6">
-                <LotusDivider className="mb-4" />
+              <div className="p-6 space-y-5">
+                <LotusDivider />
+
                 <p className="text-sm text-[#524740] leading-relaxed">
-                  {welcomeOffer.subtitle} Mention privilege code{' '}
-                  <span className="font-semibold text-[#5C1728]">{welcomeOffer.offerCode}</span>{' '}
-                  or book directly below at any time of your choice.
+                  {welcomeOffer.subtitle}
                 </p>
 
-                <form onSubmit={handleClaimSubmit} className="mt-5 space-y-3.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div>
-                      <label htmlFor="offer-guest-name" className="block text-xs font-medium text-[#1C1512] mb-1">
-                        Your Name
-                      </label>
-                      <input
-                        id="offer-guest-name"
-                        type="text"
-                        required
-                        placeholder="Full Name"
-                        value={guestName}
-                        onChange={(e) => setGuestName(e.target.value)}
-                        className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FFFFFF] border border-[#1C1512]/20 rounded-md text-sm text-[#1C1512] focus:outline-none focus:border-[#C69749] focus:ring-1 focus:ring-[#C69749]"
-                      />
-                    </div>
+                <div className="bg-[#F3EBD9] border border-[#C69749]/35 rounded-xl p-4 space-y-2.5 text-xs sm:text-sm text-[#1C1512]">
+                  <p className="flex items-center gap-2 font-medium">
+                    <Check className="w-4 h-4 text-[#1B4D3E] shrink-0" aria-hidden="true" />
+                    <span>Valid on Spa Massages, Couple Suites &amp; Hair/Beauty Salon</span>
+                  </p>
+                  <p className="flex items-center gap-2 font-medium">
+                    <Check className="w-4 h-4 text-[#1B4D3E] shrink-0" aria-hidden="true" />
+                    <span>Zero forms required · Instant confirmation in {config.area}</span>
+                  </p>
+                  <p className="pt-1 text-xs text-[#524740]">
+                    Offer Code:{' '}
+                    <span className="font-semibold text-[#5C1728]">{welcomeOffer.offerCode}</span>
+                  </p>
+                </div>
 
-                    <div>
-                      <label htmlFor="offer-guest-phone" className="block text-xs font-medium text-[#1C1512] mb-1">
-                        WhatsApp Number
-                      </label>
-                      <input
-                        id="offer-guest-phone"
-                        type="tel"
-                        required
-                        placeholder="+91 98XXX XXXXX"
-                        value={guestPhone}
-                        onChange={(e) => setGuestPhone(e.target.value)}
-                        className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FFFFFF] border border-[#1C1512]/20 rounded-md text-sm text-[#1C1512] tabular-nums focus:outline-none focus:border-[#C69749] focus:ring-1 focus:ring-[#C69749]"
-                      />
-                    </div>
-                  </div>
+                <div className="space-y-3">
+                  <a
+                    href={directOfferUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setModalOpen(false)}
+                    className="cta-shimmer w-full inline-flex items-center justify-center gap-2.5 px-5 py-3.5 min-h-[50px] bg-[#1B4D3E] hover:bg-[#22604D] active:scale-[0.99] text-[#FAF6EE] text-sm sm:text-base font-semibold rounded-lg shadow-sm transition-all"
+                  >
+                    <MessageCircle className="w-5 h-5 text-[#E8C57B]" aria-hidden="true" />
+                    <span>{welcomeOffer.ctaLabel}</span>
+                  </a>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div>
-                      <label htmlFor="offer-service-select" className="block text-xs font-medium text-[#1C1512] mb-1">
-                        Preferred Therapy
-                      </label>
-                      <select
-                        id="offer-service-select"
-                        value={selectedService}
-                        onChange={(e) => setSelectedService(e.target.value)}
-                        className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FFFFFF] border border-[#1C1512]/20 rounded-md text-sm text-[#1C1512] focus:outline-none focus:border-[#C69749] focus:ring-1 focus:ring-[#C69749]"
-                      >
-                        {services.map((service) => (
-                          <option key={service.id} value={service.name}>
-                            {service.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <a
+                    href={config.phoneHref}
+                    onClick={() => setModalOpen(false)}
+                    className="cta-shimmer w-full inline-flex items-center justify-center gap-2.5 px-5 py-3.5 min-h-[50px] bg-[#5C1728] hover:bg-[#4A1120] active:scale-[0.99] text-[#FAF6EE] text-sm sm:text-base font-semibold rounded-lg shadow-sm transition-all"
+                  >
+                    <Phone className="w-5 h-5 text-[#E8C57B]" aria-hidden="true" />
+                    <span>Call Now · {config.phoneDisplay}</span>
+                  </a>
+                </div>
 
-                    <div>
-                      <label htmlFor="offer-custom-time" className="block text-xs font-medium text-[#1C1512] mb-1">
-                        Your Preferred Time
-                      </label>
-                      <input
-                        id="offer-custom-time"
-                        type="time"
-                        value={preferredTime}
-                        onChange={(e) => setPreferredTime(e.target.value)}
-                        className="w-full px-3.5 py-2.5 min-h-[44px] bg-[#FFFFFF] border border-[#1C1512]/20 rounded-md text-sm text-[#1C1512] tabular-nums focus:outline-none focus:border-[#C69749] focus:ring-1 focus:ring-[#C69749]"
-                      />
-                    </div>
-                  </div>
-
-                  {formError && (
-                    <p role="alert" className="text-xs text-[#6B1D2F] font-medium">
-                      {formError}
-                    </p>
-                  )}
-
-                  <div className="pt-2 flex flex-col sm:flex-row gap-3">
-                    <button
-                      type="submit"
-                      className="cta-shimmer flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 min-h-[46px] bg-[#1B4D3E] hover:bg-[#22604D] text-[#FAF6EE] text-sm font-semibold rounded-md transition-colors cursor-pointer"
-                    >
-                      <MessageCircle className="w-4 h-4 text-[#E8C57B]" aria-hidden="true" />
-                      <span>Book Now on WhatsApp</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setModalOpen(false);
-                        onApplyOfferToForm(
-                          `Apply Welcome Privilege (${welcomeOffer.offerCode}) for ${selectedService}`
-                        );
-                      }}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-3 min-h-[46px] bg-[#5C1728] hover:bg-[#4A1120] text-[#FAF6EE] text-sm font-medium rounded-md transition-colors cursor-pointer"
-                    >
-                      <span>Book Now Form</span>
-                      <ArrowRight className="w-4 h-4" aria-hidden="true" />
-                    </button>
-                  </div>
-                </form>
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="w-full py-2 text-xs font-medium text-[#524740] hover:text-[#1C1512] transition-colors cursor-pointer"
+                >
+                  Continue browsing website
+                </button>
               </div>
             </motion.div>
           </motion.div>

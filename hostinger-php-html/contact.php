@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/config.php';
 $active_page = 'contact';
-$page_title = "Contact & Book Appointment | {$spa_config['brand_name']} Electronic City, Bangalore";
-$page_description = "Book your massage or spa appointment at {$spa_config['brand_name']}, Electronic City, Bangalore at any preferred time on WhatsApp or call us directly.";
+$page_title = "Book Spa & Salon Appointment | {$spa_config['brand_name']} Electronic City";
+$page_description = "Call or WhatsApp {$spa_config['brand_name']} in Electronic City, Bangalore for instant spa massage or salon appointment slots. Open daily 10 AM – 9:30 PM.";
+$page_keywords = "book spa electronic city, salon appointment electronic city bangalore, spa phone number electronic city, whatsapp spa booking bangalore, spa near hosur road electronic city, best spa near infosys electronic city";
 require __DIR__ . '/includes/header.php';
 ?>
 <main>
@@ -10,8 +11,8 @@ require __DIR__ . '/includes/header.php';
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <a href="index.php" class="text-xs font-medium tracking-wider text-[#E8C57B] hover:text-[#FAF6EE]">&larr; Back to Home</a>
       <p class="mt-4 text-xs sm:text-sm font-medium tracking-[0.18em] text-[#E8C57B]">Visit &amp; Reserve</p>
-      <h1 class="mt-2 font-serif text-4xl sm:text-5xl font-medium text-[#FAF6EE]">Contact &amp; Book Appointment</h1>
-      <p class="mt-3 text-base sm:text-lg text-[#EFE3CE] max-w-2xl">Choose your preferred time slot and reserve via WhatsApp, or get directions to <?= e($spa_config['brand_name']) ?>.</p>
+      <h1 class="mt-2 font-serif text-4xl sm:text-5xl font-medium text-[#FAF6EE]">Contact &amp; Book Spa or Salon Slot</h1>
+      <p class="mt-3 text-base sm:text-lg text-[#EFE3CE] max-w-2xl">Tap WhatsApp or Call directly for instant slot confirmation, or visit <?= e($spa_config['brand_name']) ?> in <?= e($spa_config['area']) ?>.</p>
     </div>
   </section>
 

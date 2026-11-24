@@ -74,7 +74,7 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  // Update dynamic canonical URL & page title per route for SEO
+  // Update dynamic canonical URL, per-page SEO title, meta description, and Electronic City Spa & Salon keywords
   useEffect(() => {
     const currentUrl = window.location.origin + currentPath;
     let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
@@ -85,30 +85,62 @@ export default function App() {
     }
     canonical.href = currentUrl;
 
-    let ogUrl = document.querySelector<HTMLMetaElement>('meta[property="og:url"]');
-    if (!ogUrl) {
-      ogUrl = document.createElement('meta');
-      ogUrl.setAttribute('property', 'og:url');
-      document.head.appendChild(ogUrl);
-    }
-    ogUrl.content = currentUrl;
+    const setMetaTag = (attr: 'name' | 'property', key: string, value: string) => {
+      let el = document.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.content = value;
+    };
+
+    setMetaTag('property', 'og:url', currentUrl);
 
     const brand = siteData.config.brandName;
-    if (currentPath === '/services') {
-      document.title = `Spa Services & Massages | ${brand} Electronic City, Bangalore`;
+    let title = `${brand} | Best Spa & Salon in Electronic City, Bangalore`;
+    let description = `Luxury body massage spa & hair, skin, and beauty salon in Electronic City, Bangalore. Book Swedish, deep tissue, couple spa, facials & hair spa via WhatsApp or Call.`;
+    let keywords = 'best spa and salon in electronic city, luxury spa electronic city bangalore, hair and beauty salon electronic city, body massage near electronic city phase 1, couple spa electronic city, facial and hair spa electronic city, spark spa and salon bangalore';
+
+    if (currentPath === '/spa-services') {
+      title = `Best Body Massage & Couple Spa in Electronic City | ${brand}`;
+      description = `Book Swedish massage, deep tissue massage, aromatherapy, relaxation therapy & luxury couple spa packages in Electronic City, Bangalore via WhatsApp or Call.`;
+      keywords = 'best spa in electronic city, body massage electronic city bangalore, deep tissue massage electronic city, couple spa electronic city, aromatherapy spa electronic city phase 1, swedish massage near hosur road, spark spa electronic city';
+    } else if (currentPath === '/salon-services') {
+      title = `Best Hair & Beauty Salon in Electronic City | ${brand}`;
+      description = `Visit ${brand} in Electronic City, Bangalore for keratin hair spa, precision haircuts, blowout styling, bridal radiance facials & luxury manicure-pedicure.`;
+      keywords = 'best salon in electronic city, hair salon electronic city bangalore, keratin hair spa electronic city, bridal facial electronic city, manicure pedicure salon electronic city, beauty parlour near electronic city phase 1, unisex hair salon electronic city';
+    } else if (currentPath === '/services') {
+      title = `Spa Massages & Salon Menu | ${brand} Electronic City`;
+      description = `Explore full spa massage therapies and beauty salon services in Electronic City, Bangalore: Deep Tissue, Swedish, Hair Spa, Keratin, Radiance Facials & Nail Care.`;
+      keywords = 'spa services electronic city, salon services electronic city bangalore, deep tissue massage electronic city, hair spa keratin electronic city, bridal facial electronic city, manicure pedicure electronic city, unisex spa and salon electronic city';
     } else if (currentPath === '/gallery') {
-      document.title = `Sanctuary Gallery | ${brand} Electronic City, Bangalore`;
+      title = `Spa Suites & Salon Studio Gallery | ${brand} Electronic City`;
+      description = `View private candlelit massage rooms, royal couple sanctuary, steam suites, and modern hair & beauty salon studios at ${brand} Electronic City.`;
+      keywords = 'luxury spa interiors electronic city, couple spa rooms bangalore, beauty salon interior electronic city, hygienic spa suites electronic city, thermal steam room electronic city, spark spa gallery bangalore';
     } else if (currentPath === '/offers') {
-      document.title = `Offers & Couple Packages | ${brand} Electronic City, Bangalore`;
+      title = `Spa & Salon Offers & Packages | ${brand} Electronic City`;
+      description = `Unlock first-visit spa & salon offers, weekday executive reset deals, and couple sanctuary packages in Electronic City, Bangalore. Claim via WhatsApp or Call.`;
+      keywords = 'spa offers electronic city, salon deals electronic city bangalore, couple spa package electronic city, weekday massage offer bangalore, bridal facial package electronic city, hair spa combo offer electronic city';
     } else if (currentPath === '/blog' || currentPath.startsWith('/blog/')) {
-      document.title = `Wellness Journal & Blog | ${brand} Electronic City, Bangalore`;
+      title = `Spa & Beauty Wellness Blog | ${brand} Electronic City`;
+      description = `Expert skincare, hair spa, deep tissue recovery, and aromatherapy guides from certified therapists & stylists in Electronic City, Bangalore.`;
+      keywords = 'spa and salon tips bangalore, deep tissue massage benefits electronic city, keratin hair spa guide bangalore, aromatherapy sandalwood oils, bridal skincare electronic city, wellness blog electronic city';
     } else if (currentPath === '/contact') {
-      document.title = `Book Appointment & Location | ${brand} Electronic City, Bangalore`;
+      title = `Book Spa & Salon Appointment | ${brand} Electronic City`;
+      description = `Call or WhatsApp ${brand} in Electronic City, Bangalore for instant spa massage or salon appointment slots. Open daily 10 AM – 9:30 PM.`;
+      keywords = 'book spa electronic city, salon appointment electronic city bangalore, spa phone number electronic city, whatsapp spa booking bangalore, spa near hosur road electronic city, best spa near infosys electronic city';
     } else if (currentPath === '/client-portal') {
-      document.title = `Client Content Studio | ${brand}`;
-    } else {
-      document.title = `${brand} | Best Luxury Spa in Electronic City, Bangalore`;
+      title = `Client Content Studio | ${brand}`;
     }
+
+    document.title = title;
+    setMetaTag('name', 'description', description);
+    setMetaTag('name', 'keywords', keywords);
+    setMetaTag('property', 'og:title', title);
+    setMetaTag('property', 'og:description', description);
+    setMetaTag('name', 'twitter:title', title);
+    setMetaTag('name', 'twitter:description', description);
   }, [currentPath, siteData.config.brandName]);
 
   useEffect(() => {
@@ -211,21 +243,28 @@ export default function App() {
           <>
             <HeroSection
               config={siteData.config}
-              onBookClick={goToBooking}
-              onExploreServices={() => navigate('/services')}
+              onExploreSpa={() => navigate('/spa-services')}
+              onExploreSalon={() => navigate('/salon-services')}
             />
             <WelcomeOfferSection
               config={siteData.config}
               welcomeOffer={siteData.welcomeOffer}
-              services={siteData.services}
-              onApplyOfferToForm={handleApplyOfferToForm}
             />
             <ServicesSection
+              sectionScope="spa"
               services={siteData.services}
               config={siteData.config}
               onSelectService={handleSelectService}
               previewLimit={3}
-              onViewAllClick={() => navigate('/services')}
+              onViewAllClick={() => navigate('/spa-services')}
+            />
+            <ServicesSection
+              sectionScope="salon"
+              services={siteData.services}
+              config={siteData.config}
+              onSelectService={handleSelectService}
+              previewLimit={3}
+              onViewAllClick={() => navigate('/salon-services')}
             />
             <WhyChooseSection />
             <GallerySection
@@ -255,16 +294,77 @@ export default function App() {
           </>
         )}
 
-        {/* PAGE 2: SERVICES */}
-        {currentPath === '/services' && (
+        {/* PAGE 2A: DEDICATED SPA SERVICES PAGE */}
+        {currentPath === '/spa-services' && (
           <>
             <PageHeaderBanner
-              eyebrow="Treatments & Massage Menu"
-              title="Signature Spa Therapies"
-              subtitle={`Explore every massage and holistic wellness treatment at ${siteData.config.brandName}, ${siteData.config.area}.`}
+              eyebrow="Restorative Spa Sanctuary"
+              title="Spa &amp; Body Massage Therapies"
+              subtitle={`Swedish, Deep Tissue, Aromatherapy, Relaxation & private Couple Spa sanctuaries at ${siteData.config.brandName}, ${siteData.config.area}.`}
               onBackHome={() => navigate('/')}
             />
             <ServicesSection
+              sectionScope="spa"
+              services={siteData.services}
+              config={siteData.config}
+              onSelectService={handleSelectService}
+            />
+            <WhyChooseSection />
+            <BookingFormSection
+              preselectedService={preselectedService}
+              preselectedOfferNote={preselectedOfferNote}
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              offers={siteData.offers}
+            />
+          </>
+        )}
+
+        {/* PAGE 2B: DEDICATED SALON SERVICES PAGE */}
+        {currentPath === '/salon-services' && (
+          <>
+            <PageHeaderBanner
+              eyebrow="Hair, Skin &amp; Nail Studio"
+              title="Luxury Hair &amp; Beauty Salon Services"
+              subtitle={`Keratin hair spa, signature haircuts, blowout styling, bridal radiance facials, and rose-petal manicure-pedicure rituals at ${siteData.config.brandName}, ${siteData.config.area}.`}
+              onBackHome={() => navigate('/')}
+            />
+            <ServicesSection
+              sectionScope="salon"
+              services={siteData.services}
+              config={siteData.config}
+              onSelectService={handleSelectService}
+            />
+            <WhyChooseSection />
+            <BookingFormSection
+              preselectedService={preselectedService}
+              preselectedOfferNote={preselectedOfferNote}
+              config={siteData.config}
+              welcomeOffer={siteData.welcomeOffer}
+              services={siteData.services}
+              offers={siteData.offers}
+            />
+          </>
+        )}
+
+        {/* PAGE 2C: COMBINED SERVICES FALLBACK ROUTE (separate sections) */}
+        {currentPath === '/services' && (
+          <>
+            <PageHeaderBanner
+              eyebrow="Spa &amp; Salon Menu"
+              title="Signature Spa Therapies &amp; Salon Services"
+              subtitle={`Explore every massage, couple wellness ritual, hair spa, facial, and salon treatment at ${siteData.config.brandName}, ${siteData.config.area}.`}
+              onBackHome={() => navigate('/')}
+            />
+            <ServicesSection
+              sectionScope="spa"
+              services={siteData.services}
+              config={siteData.config}
+              onSelectService={handleSelectService}
+            />
+            <ServicesSection
+              sectionScope="salon"
               services={siteData.services}
               config={siteData.config}
               onSelectService={handleSelectService}
@@ -307,15 +407,13 @@ export default function App() {
           <>
             <PageHeaderBanner
               eyebrow="Seasonal Privileges"
-              title="Wellness Packages & Offers"
-              subtitle="Curated weekday escapes, couple sanctuary packages, and first-visit welcome privileges."
+              title="Spa &amp; Salon Packages &amp; Offers"
+              subtitle="Curated weekday resets, couple sanctuary retreats, and first-visit Spa & Salon welcome privileges."
               onBackHome={() => navigate('/')}
             />
             <WelcomeOfferSection
               config={siteData.config}
               welcomeOffer={siteData.welcomeOffer}
-              services={siteData.services}
-              onApplyOfferToForm={handleApplyOfferToForm}
             />
             <OffersSection offers={siteData.offers} config={siteData.config} />
             <BookingFormSection

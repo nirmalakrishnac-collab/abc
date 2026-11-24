@@ -1,5 +1,5 @@
 <?php
-$footer_whatsapp_url = build_whatsapp_url("Namaste {$spa_config['brand_name']} ({$spa_config['area']}), I have an enquiry regarding spa services.", $spa_config);
+$footer_whatsapp_url = build_whatsapp_url("Namaste {$spa_config['brand_name']} ({$spa_config['area']}), I have an enquiry regarding spa & salon services.", $spa_config);
 $mobile_whatsapp_url = build_whatsapp_url("Namaste {$spa_config['brand_name']} ({$spa_config['area']}), I would like to book an appointment.", $spa_config);
 $directions_url = build_directions_url($spa_config);
 ?>
@@ -9,13 +9,14 @@ $directions_url = build_directions_url($spa_config);
         <div class="md:col-span-5">
           <p class="font-serif text-3xl font-medium text-[#FAF6EE]"><?= e($spa_config['brand_name']) ?></p>
           <p class="mt-3 text-sm text-[#CFC3B0] max-w-sm leading-relaxed">
-            A serene luxury spa in Electronic City, Bangalore offering tailored massage therapies, aromatherapy, and restorative couple wellness rituals.
+            Electronic City’s serene luxury spa and beauty salon offering restorative body massages, couple spa suites, keratin hair spa, radiance facials, and manicure-pedicure rituals.
           </p>
         </div>
         <div class="md:col-span-3 space-y-2.5 text-sm">
           <p class="text-xs font-medium tracking-[0.14em] text-[#E8C57B] mb-3">Explore Pages</p>
           <a href="index.php" class="block hover:text-[#FAF6EE]">Home Sanctuary</a>
-          <a href="services.php" class="block hover:text-[#FAF6EE]">Spa Services</a>
+          <a href="spa-services.php" class="block hover:text-[#FAF6EE]">Spa Massages &amp; Therapies</a>
+          <a href="salon-services.php" class="block hover:text-[#FAF6EE]">Hair &amp; Beauty Salon</a>
           <a href="gallery.php" class="block hover:text-[#FAF6EE]">Sanctuary Gallery</a>
           <a href="offers.php" class="block hover:text-[#FAF6EE]">Offers &amp; Packages</a>
           <a href="blog.php" class="block hover:text-[#FAF6EE]">Wellness Journal (Blog)</a>
@@ -36,7 +37,7 @@ $directions_url = build_directions_url($spa_config);
       <div class="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-[#A89B8B]">
         <p>&copy; <?= date('Y') ?> <?= e($spa_config['brand_name']) ?>. <?= e($spa_config['area']) ?>.</p>
         <div class="flex items-center gap-5">
-          <span>Indian Luxury Wellness &amp; Massage Sanctuary</span>
+          <span>Luxury Spa, Hair &amp; Beauty Sanctuary · Electronic City</span>
           <a href="client-dashboard.php" class="text-[#E8C57B]/90 hover:text-[#E8C57B] font-medium">Client Portal</a>
         </div>
       </div>

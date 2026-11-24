@@ -16,10 +16,11 @@ if ($requested_slug !== '') {
 
 $page_title = $active_post
     ? "{$active_post['title']} | {$spa_config['brand_name']} Blog"
-    : "Wellness Journal & Blog | {$spa_config['brand_name']} Electronic City, Bangalore";
+    : "Spa & Beauty Wellness Blog | {$spa_config['brand_name']} Electronic City";
 $page_description = $active_post
     ? (string)$active_post['excerpt']
-    : "Read spa tips, massage recovery guides & aromatherapy stories from {$spa_config['brand_name']} in Electronic City.";
+    : "Expert skincare, hair spa, deep tissue recovery, and aromatherapy guides from certified therapists & stylists in Electronic City, Bangalore.";
+$page_keywords = "spa and salon tips bangalore, deep tissue massage benefits electronic city, keratin hair spa guide bangalore, aromatherapy sandalwood oils, bridal skincare electronic city, wellness blog electronic city";
 
 require __DIR__ . '/includes/header.php';
 ?>

@@ -13,11 +13,11 @@ if (!is_dir($uploads_dir)) { @mkdir($uploads_dir, 0755, true); }
 $cms_file = $data_dir . '/cms-data.json';
 
 $default_config = [
-    'brand_name' => 'Spark Spa',
+    'brand_name' => 'Spark Spa & Salon',
     'area' => 'Electronic City, Bangalore',
-    'address_line_1' => 'Spark Spa',
-    'address_line_2' => 'Electronic City, Bangalore, Karnataka, India.',
-    'street_note' => 'Electronic City Phase 1 · Exact street address & landmark configurable',
+    'address_line_1' => 'Spark Spa & Salon',
+    'address_line_2' => 'Electronic City Phase 1, Bangalore, Karnataka, India.',
+    'street_note' => 'Electronic City Phase 1 & Phase 2 · Exact street address & landmark configurable',
     'hours' => 'Open Daily · 10:00 AM – 9:30 PM',
     'whatsapp_number' => '919800000000',
     'phone_display' => '+91 98000 00000',
@@ -31,13 +31,13 @@ $default_config = [
 ];
 
 $default_welcome_offer = [
-    'eyebrow' => 'Namaste · Electronic City Privilege',
-    'title' => 'Exclusive First-Visit & Couple Wellness Offer',
-    'subtitle' => 'Reserve directly via WhatsApp to unlock our signature welcome privilege—featuring a complimentary warm herbal compress, botanical aromatherapy upgrade, and spiced tulsi-ginger tea ritual.',
-    'highlight_note' => 'Privilege Terms: Editable Seasonal Offer · Valid on Advance WhatsApp Bookings',
+    'eyebrow' => 'Namaste · Electronic City Spa & Salon Privilege',
+    'title' => 'Exclusive First-Visit Spa & Salon Offer',
+    'subtitle' => 'Tap WhatsApp or Call below to unlock our exclusive Electronic City welcome privilege—valid on signature body massages, couple spa suites, hair spa, keratin rituals, and radiance facials.',
+    'highlight_note' => 'Instant Confirmation · Valid for Walk-In & Same-Day Spa & Salon Slots',
     'offer_code' => 'SPARK-WELCOME',
     'cta_label' => 'Claim Offer on WhatsApp',
-    'whatsapp_greeting' => 'Namaste Spark Spa (Electronic City, Bangalore), I would like to claim your Website Welcome Offer (SPARK-WELCOME) and check today’s available appointment slots.',
+    'whatsapp_greeting' => 'Namaste Spark Spa & Salon (Electronic City, Bangalore), I would like to claim the Website Welcome Offer (SPARK-WELCOME) and check today’s available Spa & Salon appointment slots.',
 ];
 
 $default_services = [
@@ -51,7 +51,7 @@ $default_services = [
         'duration' => 'Duration: Custom Session',
         'price' => 'Tariff: Price Upon Enquiry',
         'image' => 'images/therapy_swedish_action_1795111730062.jpg',
-        'alt' => 'Spa therapist performing a relaxing Swedish back and shoulder massage in a candlelit travertine suite at Spark Spa Electronic City',
+        'alt' => 'Spa therapist performing a relaxing Swedish back and shoulder massage in a candlelit travertine suite at Spark Spa & Salon Electronic City',
     ],
     [
         'id' => 'deep-tissue-massage',
@@ -63,7 +63,7 @@ $default_services = [
         'duration' => 'Duration: Custom Session',
         'price' => 'Tariff: Price Upon Enquiry',
         'image' => 'images/therapy_deep_tissue_action_1795111730542.jpg',
-        'alt' => 'Wellness therapist performing restorative deep tissue shoulder and back massage with warm basalt stones at Spark Spa',
+        'alt' => 'Wellness therapist performing restorative deep tissue shoulder and back massage with warm basalt stones at Spark Spa & Salon',
     ],
     [
         'id' => 'aromatherapy',
@@ -75,7 +75,7 @@ $default_services = [
         'duration' => 'Duration: Custom Session',
         'price' => 'Tariff: Price Upon Enquiry',
         'image' => 'images/therapy_aromatherapy_action_1795111730499.jpg',
-        'alt' => 'Indian aromatherapy ritual with therapist pouring warm golden botanical oil beside essential oil bottles and candlelight at Spark Spa',
+        'alt' => 'Indian aromatherapy ritual with therapist pouring warm golden botanical oil beside essential oil bottles and candlelight at Spark Spa & Salon',
     ],
     [
         'id' => 'relaxation-therapy',
@@ -87,7 +87,7 @@ $default_services = [
         'duration' => 'Duration: Custom Session',
         'price' => 'Tariff: Price Upon Enquiry',
         'image' => 'images/therapy_relaxation_action_1795111729764.jpg',
-        'alt' => 'Therapist performing calming head and temple acupressure relaxation massage in a backlit alabaster suite at Spark Spa Bangalore',
+        'alt' => 'Therapist performing calming head and temple acupressure relaxation massage in a backlit alabaster suite at Spark Spa & Salon Bangalore',
     ],
     [
         'id' => 'couple-spa-packages',
@@ -99,7 +99,7 @@ $default_services = [
         'duration' => 'Duration: Custom Session',
         'price' => 'Tariff: Price Upon Enquiry',
         'image' => 'images/therapy_couple_action_1795111730015.jpg',
-        'alt' => 'Royal Indian couple spa suite with carved arches, brass lanterns, dual massage beds, and rose petal soaking bath at Spark Spa',
+        'alt' => 'Royal Indian couple spa suite with carved arches, brass lanterns, dual massage beds, and rose petal soaking bath at Spark Spa & Salon',
     ],
     [
         'id' => 'body-wellness-treatments',
@@ -111,17 +111,65 @@ $default_services = [
         'duration' => 'Duration: Custom Session',
         'price' => 'Tariff: Price Upon Enquiry',
         'image' => 'images/therapy_body_wellness_action_1795111730071.jpg',
-        'alt' => 'Therapist applying warm steamed herbal poultice compresses during a body wellness treatment at Spark Spa Electronic City',
+        'alt' => 'Therapist applying warm steamed herbal poultice compresses during a body wellness treatment at Spark Spa & Salon Electronic City',
+    ],
+    [
+        'id' => 'hair-spa-keratin',
+        'index' => '07',
+        'name' => 'Luxury Hair Spa & Keratin Rituals',
+        'category' => 'salon',
+        'category_label' => 'Hair Salon & Care',
+        'description' => 'Deep scalp nourishment, botanical steam conditioning, frizz-control keratin smoothing, and relaxing head massage for glossy, healthy hair.',
+        'duration' => 'Duration: Custom Salon Session',
+        'price' => 'Tariff: Price Upon Enquiry',
+        'image' => 'images/salon_hair_styling_1795541015663.jpg',
+        'alt' => 'Luxury hair spa and keratin styling studio at Spark Spa & Salon in Electronic City, Bangalore',
+    ],
+    [
+        'id' => 'signature-haircut-styling',
+        'index' => '08',
+        'name' => 'Signature Haircut & Blowout Styling',
+        'category' => 'salon',
+        'category_label' => 'Hair Salon & Styling',
+        'description' => 'Precision cuts for women and men, tailored texture layering, nourishing hair wash, and polished salon blowout finishes by senior stylists.',
+        'duration' => 'Duration: Custom Salon Session',
+        'price' => 'Tariff: Price Upon Enquiry',
+        'image' => 'images/salon_hair_styling_1795541015663.jpg',
+        'alt' => 'Senior hair stylist crafting luxury blowout styling at Spark Spa & Salon Electronic City Bangalore',
+    ],
+    [
+        'id' => 'bridal-radiance-facials',
+        'index' => '09',
+        'name' => 'Radiance & Bridal Glow Facials',
+        'category' => 'salon',
+        'category_label' => 'Skin & Beauty Salon',
+        'description' => 'Hydra-cleanse botanical facials, de-tan rituals, lymphatic face sculpting, and golden radiance masks for luminous event-ready skin.',
+        'duration' => 'Duration: Custom Salon Session',
+        'price' => 'Tariff: Price Upon Enquiry',
+        'image' => 'images/salon_facial_glow_1795541016170.jpg',
+        'alt' => 'Esthetician applying golden botanical radiance facial at Spark Spa & Salon Electronic City',
+    ],
+    [
+        'id' => 'luxury-manicure-pedicure',
+        'index' => '10',
+        'name' => 'Luxury Spa Manicure & Pedicure',
+        'category' => 'salon',
+        'category_label' => 'Nail & Foot Salon',
+        'description' => 'Rose-petal warm mineral foot soak, gentle exfoliation, cuticle precision care, hydrating mask wrap, and relaxing lower-leg massage.',
+        'duration' => 'Duration: Custom Salon Session',
+        'price' => 'Tariff: Price Upon Enquiry',
+        'image' => 'images/salon_manicure_pedicure_1795541017059.jpg',
+        'alt' => 'Luxury rose petal foot soak and spa pedicure lounge at Spark Spa & Salon Electronic City Bangalore',
     ],
 ];
 
 $why_choose = [
-    ['index' => '01', 'title' => 'Peaceful & Relaxing Atmosphere', 'description' => 'Sound-insulated suites, warm travertine textures, brass candlelight, and Mysore sandalwood notes designed to quiet city noise the moment you arrive.'],
-    ['index' => '02', 'title' => 'Professional Therapists', 'description' => 'Certified wellness practitioners trained in anatomy-aware bodywork, calibrated pressure control, and warm Indian hospitality.'],
-    ['index' => '03', 'title' => 'Hygienic Environment', 'description' => 'Freshly laundered organic cotton linens for every guest, hospital-grade suite sanitization between appointments, and purified air circulation.'],
-    ['index' => '04', 'title' => 'Personalized Wellness Experience', 'description' => 'Every session begins with a brief consultation to tailor oil selection, pressure intensity, and focus zones to how your body feels that day.'],
-    ['index' => '05', 'title' => 'Convenient Electronic City Location', 'description' => 'Thoughtfully situated in Electronic City, Bangalore for effortless post-work decompression or weekend restoration without cross-city traffic.'],
-    ['index' => '06', 'title' => 'Easy Appointment Booking', 'description' => 'Reserve your preferred therapy, date, and your own custom time in under a minute with instant WhatsApp concierge confirmation.'],
+    ['index' => '01', 'title' => 'Spa & Salon Under One Roof', 'description' => 'Pair restorative massages and thermal steam with precision haircuts, keratin hair spa, radiance facials, and manicure-pedicure rituals in one serene destination.'],
+    ['index' => '02', 'title' => 'Certified Therapists & Stylists', 'description' => 'Experienced wellness bodywork therapists alongside senior hair stylists and skin estheticians trained in gentle, bespoke consultation.'],
+    ['index' => '03', 'title' => 'Five-Star Hygienic Suites', 'description' => 'Freshly laundered organic cotton linens, sterilized salon instruments before every guest, and private sound-insulated therapy suites.'],
+    ['index' => '04', 'title' => 'Tailored Skin, Hair & Body Care', 'description' => 'Every spa or salon visit begins with a quick personal assessment to match oil blends, massage pressure, hair texture care, or skin actives to your needs.'],
+    ['index' => '05', 'title' => 'Prime Electronic City Location', 'description' => 'Conveniently located in Electronic City, Bangalore for effortless weekday grooming, post-work recovery, and weekend couple indulgence.'],
+    ['index' => '06', 'title' => '1-Tap WhatsApp & Call Booking', 'description' => 'Skip lengthy forms—tap WhatsApp or Call directly to check real-time availability, claim welcome privileges, and lock in your slot in seconds.'],
 ];
 
 $default_gallery = [
@@ -132,7 +180,7 @@ $default_gallery = [
         'category_label' => 'Luxury Spa Interiors',
         'caption' => 'Warm travertine colonnades, teak accents, and tranquil water reflections set the pace for unhurried restoration.',
         'image' => 'images/hero_spa_sanctuary_1795110762237.jpg',
-        'alt' => 'Luxury spa interior with candlelit reflection pool at Spark Spa Electronic City Bangalore',
+        'alt' => 'Luxury spa interior with candlelit reflection pool at Spark Spa & Salon Electronic City Bangalore',
         'span' => 'md:col-span-7 md:row-span-2',
     ],
     [
@@ -142,7 +190,7 @@ $default_gallery = [
         'category_label' => 'Couple Sanctuary',
         'caption' => 'Carved archways, brass lanterns, dual heated treatment beds, and a carved stone floral soaking bath.',
         'image' => 'images/therapy_couple_action_1795111730015.jpg',
-        'alt' => 'Private Indian luxury couple massage suite with stone soaking tub at Spark Spa Electronic City',
+        'alt' => 'Private Indian luxury couple massage suite with stone soaking tub at Spark Spa & Salon Electronic City',
         'span' => 'md:col-span-5',
     ],
     [
@@ -152,7 +200,7 @@ $default_gallery = [
         'category_label' => 'Spa Facilities',
         'caption' => 'Private charcoal-slate steam sanctuary and brushed brass rain showers to prepare muscles before bodywork.',
         'image' => 'images/gallery_hydro_suite_1795110760651.jpg',
-        'alt' => 'Charcoal slate steam room and rain shower suite at Spark Spa Bangalore',
+        'alt' => 'Charcoal slate steam room and rain shower suite at Spark Spa & Salon Bangalore',
         'span' => 'md:col-span-5',
     ],
     [
@@ -162,7 +210,7 @@ $default_gallery = [
         'category_label' => 'Wellness Experience',
         'caption' => 'Warm sandalwood and eucalyptus oils poured fresh for every session amid glowing beeswax candles.',
         'image' => 'images/therapy_aromatherapy_action_1795111730499.jpg',
-        'alt' => 'Aromatherapy oil pouring ritual in candlelit suite at Spark Spa',
+        'alt' => 'Aromatherapy oil pouring ritual in candlelit suite at Spark Spa & Salon',
         'span' => 'md:col-span-4',
     ],
     [
@@ -172,7 +220,7 @@ $default_gallery = [
         'category_label' => 'Relaxing Ambience',
         'caption' => 'Linen-draped daylight lounge where guests unwind with warm tulsi-ginger infusions before and after therapy.',
         'image' => 'images/gallery_lounge_ambience_1795110761454.jpg',
-        'alt' => 'Curved boucle armchairs and sheer curtains in Spark Spa relaxation lounge',
+        'alt' => 'Curved boucle armchairs and sheer curtains in Spark Spa & Salon relaxation lounge',
         'span' => 'md:col-span-4',
     ],
     [
@@ -182,7 +230,37 @@ $default_gallery = [
         'category_label' => 'Therapy Suites',
         'caption' => 'Steamed organic cotton herbal poultices and mineral sea-salt rituals inside our daylight suites.',
         'image' => 'images/therapy_body_wellness_action_1795111730071.jpg',
-        'alt' => 'Herbal poultice massage treatment inside Spark Spa Electronic City',
+        'alt' => 'Herbal poultice massage treatment inside Spark Spa & Salon Electronic City',
+        'span' => 'md:col-span-4',
+    ],
+    [
+        'id' => 'salon-hair-studio',
+        'title' => 'Luxury Hair & Styling Studio',
+        'space_category' => 'interiors',
+        'category_label' => 'Hair Salon Lounge',
+        'caption' => 'Arched brass mirrors, plush travertine styling stations, and dedicated keratin & hair spa care.',
+        'image' => 'images/salon_hair_styling_1795541015663.jpg',
+        'alt' => 'Luxury hair salon and blowout styling studio at Spark Spa & Salon Electronic City',
+        'span' => 'md:col-span-4',
+    ],
+    [
+        'id' => 'salon-facial-suite',
+        'title' => 'Radiance Facial & Skin Suite',
+        'space_category' => 'suites',
+        'category_label' => 'Beauty & Skin Salon',
+        'caption' => 'Calm botanical facial suite designed for golden glow facials, hydra-cleanse, and event skin prep.',
+        'image' => 'images/salon_facial_glow_1795541016170.jpg',
+        'alt' => 'Botanical glow facial suite inside Spark Spa & Salon Electronic City Bangalore',
+        'span' => 'md:col-span-4',
+    ],
+    [
+        'id' => 'salon-pedicure-lounge',
+        'title' => 'Rose-Petal Nail & Foot Lounge',
+        'space_category' => 'rituals',
+        'category_label' => 'Manicure & Pedicure Salon',
+        'caption' => 'Carved travertine foot soaking bowls with warm rose petals, organic scrubs, and luxury nail care.',
+        'image' => 'images/salon_manicure_pedicure_1795541017059.jpg',
+        'alt' => 'Luxury spa manicure and pedicure lounge at Spark Spa & Salon Electronic City',
         'span' => 'md:col-span-4',
     ],
 ];
@@ -191,11 +269,11 @@ $default_offers = [
     [
         'id' => 'weekday-reset',
         'code' => 'Package 01',
-        'title' => 'Weekday Executive Reset',
-        'subtitle' => 'Designed for Electronic City professionals seeking post-work decompression.',
+        'title' => 'Weekday Executive Spa & Grooming Reset',
+        'subtitle' => 'Built for Electronic City professionals looking to unwind and refresh in a single visit.',
         'inclusions' => [
             'Choice of Deep Tissue or Swedish Massage',
-            'Warm herbal shoulder & neck compress',
+            'Refreshing Hair Wash, Blowout Styling & Neck Compress',
             'Complimentary thermal shower access & spiced herbal tea',
         ],
         'duration' => 'Editable Duration · Weekday Slots',
@@ -204,11 +282,11 @@ $default_offers = [
     [
         'id' => 'couple-retreat',
         'code' => 'Package 02',
-        'title' => 'Signature Couple Sanctuary',
-        'subtitle' => 'A private candlelit retreat crafted for anniversaries, weekends, and unhurried togetherness.',
+        'title' => 'Signature Couple Spa & Glow Sanctuary',
+        'subtitle' => 'A private candlelit retreat combining couple bodywork with salon radiance care.',
         'inclusions' => [
             'Side-by-side Aromatherapy or Relaxation Massage',
-            'Private floral stone soaking ritual',
+            'Private floral stone soaking ritual or Express Glow Facial',
             'Warm botanical body polish & lounge refreshments',
         ],
         'duration' => 'Editable Duration · Private Suite',
@@ -217,14 +295,14 @@ $default_offers = [
     [
         'id' => 'full-renewal',
         'code' => 'Package 03',
-        'title' => 'Total Body Renewal Ritual',
-        'subtitle' => 'Head-to-toe restorative sequence blending exfoliation, bodywork, and calming aromatherapy.',
+        'title' => 'Complete Spa & Salon Renewal Ritual',
+        'subtitle' => 'Head-to-toe beauty and wellness indulgence pairing salon treatments with full-body spa therapy.',
         'inclusions' => [
-            'Mineral sea-salt & botanical body scrub',
-            'Full-body Relaxation or Aromatherapy session',
-            'Soothing scalp & foot reflexology finish',
+            'Luxury Hair Spa + Radiance Facial treatment',
+            'Full-body Relaxation or Aromatherapy massage',
+            'Rose-petal Spa Manicure & Pedicure finish',
         ],
-        'duration' => 'Editable Duration · Full Ritual',
+        'duration' => 'Editable Duration · Full Day Ritual',
         'price' => 'Package Tariff Upon Enquiry (Editable)',
     ],
 ];

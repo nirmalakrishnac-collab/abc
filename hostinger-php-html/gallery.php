@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/config.php';
 $active_page = 'gallery';
-$page_title = "Sanctuary Gallery | {$spa_config['brand_name']} Electronic City, Bangalore";
-$page_description = "Browse interiors, candlelit couple massage suites, steam rooms & wellness rituals inside {$spa_config['brand_name']} Electronic City.";
+$page_title = "Spa Suites & Salon Studio Gallery | {$spa_config['brand_name']} Electronic City";
+$page_description = "View private candlelit massage rooms, royal couple sanctuary, steam suites, and modern hair & beauty salon studios at {$spa_config['brand_name']} Electronic City.";
+$page_keywords = "luxury spa interiors electronic city, couple spa rooms bangalore, beauty salon interior electronic city, hygienic spa suites electronic city, thermal steam room electronic city, spark spa gallery bangalore";
 require __DIR__ . '/includes/header.php';
 ?>
 <main>
@@ -10,8 +11,8 @@ require __DIR__ . '/includes/header.php';
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <a href="index.php" class="text-xs font-medium tracking-wider text-[#E8C57B] hover:text-[#FAF6EE]">&larr; Back to Home</a>
       <p class="mt-4 text-xs sm:text-sm font-medium tracking-[0.18em] text-[#E8C57B]">Inside Our Sanctuary</p>
-      <h1 class="mt-2 font-serif text-4xl sm:text-5xl font-medium text-[#FAF6EE]">Spa Interiors, Suites &amp; Rituals</h1>
-      <p class="mt-3 text-base sm:text-lg text-[#EFE3CE] max-w-2xl">Explore photos uploaded by our spa team showing private massage suites, steam suites, and serene interiors.</p>
+      <h1 class="mt-2 font-serif text-4xl sm:text-5xl font-medium text-[#FAF6EE]">Spa Suites &amp; Luxury Salon Studios</h1>
+      <p class="mt-3 text-base sm:text-lg text-[#EFE3CE] max-w-2xl">Explore private massage suites, royal couple soaking rooms, hair styling studios, facial lounges, and thermal sanctuaries.</p>
     </div>
   </section>
 

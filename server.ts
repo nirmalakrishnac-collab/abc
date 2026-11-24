@@ -520,14 +520,19 @@ async function startServer(): Promise<void> {
     }
     const store = readSiteStore();
     const nextIdx = String(store.services.length + 1).padStart(2, '0');
+    const rawSvcCat = req.body?.category;
+    const category: SpaService['category'] =
+      rawSvcCat === 'salon' ? 'salon' : rawSvcCat === 'holistic' ? 'holistic' : 'massage';
     const newService: SpaService = {
       id: `svc-${crypto.randomUUID().slice(0, 8)}`,
       index: nextIdx,
       name: name.slice(0, 80),
-      category: req.body?.category === 'holistic' ? 'holistic' : 'massage',
+      category,
       categoryLabel:
         typeof req.body?.categoryLabel === 'string' && req.body.categoryLabel.trim()
           ? req.body.categoryLabel.trim().slice(0, 48)
+          : category === 'salon'
+          ? 'Hair & Beauty Salon'
           : 'Signature Therapy',
       shortDescription: shortDescription.slice(0, 320),
       duration:

@@ -1,9 +1,12 @@
 <?php
 if (!isset($page_title)) {
-    $page_title = "{$spa_config['brand_name']} | Best Luxury Spa in Electronic City, Bangalore";
+    $page_title = "{$spa_config['brand_name']} | Best Luxury Spa & Salon in Electronic City, Bangalore";
 }
 if (!isset($page_description)) {
-    $page_description = "Relax and rejuvenate at {$spa_config['brand_name']}, the best luxury spa in Electronic City, Bangalore. Book Swedish, deep tissue, aromatherapy & couple spa treatments.";
+    $page_description = "Relax and glow at {$spa_config['brand_name']}, the premier luxury massage spa & beauty salon in Electronic City, Bangalore. Book Swedish, deep tissue, hair spa, facials & couple spa via WhatsApp or Call.";
+}
+if (!isset($page_keywords)) {
+    $page_keywords = "best spa and salon in electronic city, luxury spa electronic city bangalore, hair and beauty salon electronic city, body massage near electronic city phase 1, couple spa electronic city, facial and hair spa electronic city";
 }
 if (!isset($active_page)) {
     $active_page = 'home';
@@ -17,7 +20,8 @@ $directions_url = build_directions_url($spa_config);
 
 $nav_pages = [
     ['key' => 'home', 'label' => 'Home', 'href' => 'index.php'],
-    ['key' => 'services', 'label' => 'Services', 'href' => 'services.php'],
+    ['key' => 'spa', 'label' => 'Spa', 'href' => 'spa-services.php'],
+    ['key' => 'salon', 'label' => 'Salon', 'href' => 'salon-services.php'],
     ['key' => 'gallery', 'label' => 'Gallery', 'href' => 'gallery.php'],
     ['key' => 'offers', 'label' => 'Offers', 'href' => 'offers.php'],
     ['key' => 'blog', 'label' => 'Blog', 'href' => 'blog.php'],
@@ -31,7 +35,7 @@ $nav_pages = [
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title><?= e($page_title) ?></title>
   <meta name="description" content="<?= e($page_description) ?>" />
-  <meta name="keywords" content="Best Spa in Electronic City, Spa in Electronic City Bangalore, Massage Spa in Electronic City, Luxury Spa in Electronic City, Spa Near Me, Spark Spa Bangalore" />
+  <meta name="keywords" content="<?= e($page_keywords) ?>" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="<?= e($canonical_url) ?>" />
 
@@ -42,6 +46,10 @@ $nav_pages = [
   <meta property="og:title" content="<?= e($page_title) ?>" />
   <meta property="og:description" content="<?= e($page_description) ?>" />
   <meta property="og:image" content="images/hero_spa_sanctuary_1795110762237.jpg" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="<?= e($page_title) ?>" />
+  <meta name="twitter:description" content="<?= e($page_description) ?>" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -64,9 +72,9 @@ $nav_pages = [
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": ["DaySpa", "HealthAndBeautyBusiness", "LocalBusiness"],
+    "@type": ["DaySpa", "BeautySalon", "HairSalon", "HealthAndBeautyBusiness", "LocalBusiness"],
     "name": <?= json_encode($spa_config['brand_name']) ?>,
-    "description": "Luxury wellness sanctuary and massage spa in Electronic City, Bangalore.",
+    "description": "Luxury body massage spa, hair spa, keratin studio, radiance facials & beauty salon in Electronic City, Bangalore.",
     "image": "images/hero_spa_sanctuary_1795110762237.jpg",
     "telephone": <?= json_encode($spa_config['phone_display']) ?>,
     "address": {
@@ -101,12 +109,12 @@ $nav_pages = [
 <body class="bg-[#FAF6EE] text-[#1C1512] antialiased selection:bg-[#C69749]/25 selection:text-[#1C1512]">
 
   <header class="relative md:sticky md:top-0 z-40 bg-[#FAF6EE]/95 backdrop-blur-md border-b border-[#C69749]/25">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-18 flex items-center justify-between gap-6">
-      <a href="index.php" class="font-serif text-2xl md:text-[27px] font-semibold tracking-tight text-[#1C1512] whitespace-nowrap shrink-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 md:h-18 flex items-center justify-between gap-4 lg:gap-6">
+      <a href="index.php" class="font-serif text-xl sm:text-2xl md:text-[26px] font-semibold tracking-tight text-[#1C1512] whitespace-nowrap shrink-0">
         <?= e($spa_config['brand_name']) ?>
       </a>
 
-      <nav aria-label="Primary navigation" class="hidden md:flex items-center gap-6">
+      <nav aria-label="Primary navigation" class="hidden md:flex items-center gap-4 lg:gap-6">
         <?php foreach ($nav_pages as $p): $is_cur = ($active_page === $p['key']); ?>
         <a href="<?= e($p['href']) ?>" <?= $is_cur ? 'aria-current="page"' : '' ?> class="text-sm font-medium transition-colors whitespace-nowrap shrink-0 relative py-1 <?= $is_cur ? 'text-[#5C1728] font-semibold border-b-2 border-[#C69749]' : 'text-[#524740] hover:text-[#5C1728]' ?>">
           <?= e($p['label']) ?>
