@@ -249,6 +249,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $flash_ok = 'Service updated!';
                     }
                 }
+            } elseif ($action === 'add_service') {
+                if ($user_role !== 'owner') {
+                    $flash_err = 'Access denied. Blogs & Photos Only accounts cannot add services.';
+                } else {
+                    $sname = trim((string)($_POST['name'] ?? ''));
+                    $scat = (string)($_POST['category'] ?? 'massage');
+                    if (!in_array($scat, ['massage', 'salon', 'holistic'], true)) { $scat = 'massage'; }
+                    $sdur = trim((string)($_POST['duration'] ?? 'Duration: Custom Session')) ?: 'Duration: Custom Session';
+                    $sprice = trim((string)($_POST['price'] ?? 'Tariff: Price Upon Enquiry')) ?: 'Tariff: Price Upon Enquiry';
+                    $sdesc = trim((string)($_POST['description'] ?? ''));
+                    $uploaded = handle_php_image_upload('service_photo', $uploads_dir, $flash_err);
+                    if ($flash_err === '' && strlen($sname) >= 2 && strlen($sdesc) >= 6) {
+                        $cat_labels = ['massage' => 'Classic Bodywork', 'salon' => 'Hair & Beauty Salon', 'holistic' => 'Holistic & Couples'];
+                        $fallback_img = $scat === 'salon' ? 'images/salon_hair_styling_1795541015663.jpg' : 'images/therapy_swedish_action_1795111730062.jpg';
+                        $cms_payload['services'][] = [
+                            'id' => 'svc-' . bin2hex(random_bytes(4)),
+                            'index' => str_pad((string)(count($cms_payload['services']) + 1), 2, '0', STR_PAD_LEFT),
+                            'name' => $sname,
+                            'category' => $scat,
+                            'category_label' => $cat_labels[$scat],
+                            'description' => $sdesc,
+                            'duration' => $sdur,
+                            'price' => $sprice,
+                            'image' => $uploaded ?: $fallback_img,
+                            'alt' => $sname . ' at ' . $spa_config['brand_name'] . ' Electronic City Bangalore',
+                        ];
+                        save_cms_data($cms_payload);
+                        $services = $cms_payload['services'];
+                        $flash_ok = 'New service added to website!';
+                    } elseif ($flash_err === '') {
+                        $flash_err = 'Please enter service name and short description.';
+                    }
+                }
             } elseif ($action === 'save_settings') {
                 if ($user_role !== 'owner') {
                     $flash_err = 'Access denied. Blogs & Photos Only accounts cannot edit business settings.';
@@ -499,22 +532,48 @@ if (!empty($_GET['edit_blog'])) {
       </div>
 
       <?php elseif ($tab === 'services' && $user_role === 'owner'): ?>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <?php foreach ($services as $s): ?>
-        <form method="POST" enctype="multipart/form-data" class="bg-white border border-[#C69749]/30 rounded-xl p-6 space-y-3">
+      <div class="space-y-8">
+        <form method="POST" enctype="multipart/form-data" class="bg-white border border-[#C69749]/35 rounded-xl p-6 space-y-4 max-w-2xl">
           <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>" />
-          <input type="hidden" name="action" value="update_service" />
-          <input type="hidden" name="service_id" value="<?= e($s['id']) ?>" />
-          <input type="text" name="name" value="<?= e($s['name']) ?>" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm font-semibold" />
-          <div class="grid grid-cols-2 gap-3">
-            <input type="text" name="duration" value="<?= e($s['duration']) ?>" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs" />
-            <input type="text" name="price" value="<?= e($s['price']) ?>" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs" />
+          <input type="hidden" name="action" value="add_service" />
+          <h2 class="font-serif text-2xl font-medium">Add New Spa or Salon Service</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input type="text" name="name" required placeholder="Service Name *" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm" />
+            <select name="category" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm">
+              <option value="massage">Spa Massage Category</option>
+              <option value="salon">Hair &amp; Beauty Salon Category</option>
+              <option value="holistic">Holistic &amp; Couples Category</option>
+            </select>
           </div>
-          <textarea name="description" rows="2" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs"><?= e($s['description']) ?></textarea>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input type="text" name="duration" value="Duration: Custom Session" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm" />
+            <input type="text" name="price" value="Tariff: Price Upon Enquiry" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm" />
+          </div>
+          <textarea name="description" rows="2" required placeholder="Short service description *" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm"></textarea>
           <input type="file" name="service_photo" accept="image/jpeg,image/png,image/webp" class="w-full text-xs" />
-          <button type="submit" class="px-4 py-2 bg-[#1B4D3E] text-[#FAF6EE] text-xs font-semibold rounded-md cursor-pointer">Save Service</button>
+          <button type="submit" class="px-5 py-2.5 bg-[#5C1728] text-[#FAF6EE] text-xs sm:text-sm font-semibold rounded-md cursor-pointer">Add Service</button>
         </form>
-        <?php endforeach; ?>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <?php foreach ($services as $s): ?>
+          <form method="POST" enctype="multipart/form-data" class="bg-white border border-[#C69749]/30 rounded-xl p-6 space-y-3">
+            <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>" />
+            <input type="hidden" name="action" value="update_service" />
+            <input type="hidden" name="service_id" value="<?= e($s['id']) ?>" />
+            <div class="flex items-center justify-between text-[11px] font-medium text-[#8F6422]">
+              <span><?= e($s['index']) ?> · <?= ($s['category'] ?? '') === 'salon' ? 'Salon Service' : 'Spa Service' ?></span>
+            </div>
+            <input type="text" name="name" value="<?= e($s['name']) ?>" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-sm font-semibold" />
+            <div class="grid grid-cols-2 gap-3">
+              <input type="text" name="duration" value="<?= e($s['duration']) ?>" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs" />
+              <input type="text" name="price" value="<?= e($s['price']) ?>" class="px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs" />
+            </div>
+            <textarea name="description" rows="2" class="w-full px-3 py-2 bg-[#FAF6EE] border border-[#1C1512]/20 rounded-md text-xs"><?= e($s['description']) ?></textarea>
+            <input type="file" name="service_photo" accept="image/jpeg,image/png,image/webp" class="w-full text-xs" />
+            <button type="submit" class="px-4 py-2 bg-[#1B4D3E] text-[#FAF6EE] text-xs font-semibold rounded-md cursor-pointer">Save Service</button>
+          </form>
+          <?php endforeach; ?>
+        </div>
       </div>
 
       <?php elseif ($tab === 'settings' && $user_role === 'owner'): ?>

@@ -43,6 +43,7 @@ export function ClientPortalPage({
   onBackToWebsite,
 }: ClientPortalPageProps) {
   const [authStatusLoading, setAuthStatusLoading] = useState(true);
+  const [backendUnavailable, setBackendUnavailable] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [hasBloggerAccount, setHasBloggerAccount] = useState(false);
   const [role, setRole] = useState<PortalRole | null>(null);
@@ -120,7 +121,10 @@ export function ClientPortalPage({
         const res = await fetch('/api/client/status', {
           headers: sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {},
         });
-        if (!res.ok) throw new Error('Status check failed');
+        const contentType = res.headers.get('content-type') || '';
+        if (!res.ok || !contentType.includes('application/json')) {
+          throw new Error('Status check failed');
+        }
         const data = (await res.json()) as {
           needsSetup: boolean;
           hasBloggerAccount?: boolean;
@@ -128,6 +132,7 @@ export function ClientPortalPage({
           role?: PortalRole | null;
         };
         if (active) {
+          setBackendUnavailable(false);
           setNeedsSetup(data.needsSetup);
           setHasBloggerAccount(Boolean(data.hasBloggerAccount));
           const resolvedRole = data.authenticated && data.role ? data.role : null;
@@ -140,7 +145,7 @@ export function ClientPortalPage({
           }
         }
       } catch {
-        // ignore network hiccup
+        if (active) setBackendUnavailable(true);
       } finally {
         if (active) setAuthStatusLoading(false);
       }
@@ -578,6 +583,20 @@ export function ClientPortalPage({
 
             {authStatusLoading ? (
               <p className="text-sm text-[#524740]">Checking Client Portal status...</p>
+            ) : backendUnavailable ? (
+              <div>
+                <h1 className="font-serif text-3xl font-medium text-[#1C1512]">
+                  Server Required for Client Portal
+                </h1>
+                <p className="mt-2.5 text-sm text-[#524740] leading-relaxed">
+                  This static deployment (such as Vercel static hosting) is serving only the public frontend pages, so live password login and blog/photo uploads are offline here.
+                </p>
+                <div className="mt-4 p-4 rounded-lg bg-[#F3EBD9] border border-[#C69749]/40 text-xs sm:text-sm text-[#1C1512] space-y-2">
+                  <p className="font-semibold text-[#5C1728]">Where the Client Portal works live:</p>
+                  <p>1. Use the <strong>Publish</strong> deployment from your app studio (runs the full Node backend).</p>
+                  <p>2. Or upload the <strong>Hostinger PHP bundle</strong> (<code className="text-[#5C1728]">client-dashboard.php</code>) to your Hostinger hosting.</p>
+                </div>
+              </div>
             ) : (
               <>
                 <h1 className="font-serif text-3xl font-medium text-[#1C1512]">
